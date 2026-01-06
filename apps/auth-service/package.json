@@ -1,5 +1,5 @@
 {
-  "name": "@nextgen/auth-service",
+  "name": "auth-service",
   "version": "0.0.1",
   "private": true,
   "nx": {
@@ -84,15 +84,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "@nextgen/auth-service:build",
+          "buildTarget": "auth-service:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "@nextgen/auth-service:build:development"
+            "buildTarget": "auth-service:build:development"
           },
           "production": {
-            "buildTarget": "@nextgen/auth-service:build:production"
+            "buildTarget": "auth-service:build:production"
           }
         }
       },
