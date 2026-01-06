@@ -1,0 +1,38 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "1. Setup Environment (First Time / Reset)",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/setup_dev.ps1"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "2. Run All Services",
+      "type": "shell",
+      "command": "npx",
+      "args": [
+        "nx",
+        "run-many",
+        "--target=serve",
+        "--projects=api-gateway,auth-service,product-service,order-service",
+        "--parallel"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
