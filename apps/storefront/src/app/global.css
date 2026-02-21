@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-textMain min-h-screen relative overflow-x-hidden;
+    /* Custom scrollbar */
+  }
+
+  /* Webkit custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-background;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surfaceHover rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-neonPurple;
+  }
+}
+
+@layer components {
+  /* Glassmorphism Panel */
+  .glass-panel {
+    @apply bg-glass-gradient backdrop-blur-md border border-[rgba(255,255,255,0.1)] rounded-xl shadow-glass;
+  }
+
+  /* Futuristic Buttons */
+  .btn-neon-primary {
+    @apply relative overflow-hidden bg-transparent text-neonBlue border border-neonBlue rounded px-6 py-2 uppercase tracking-widest font-bold transition-all duration-300 hover:bg-neonBlue hover:text-background hover:shadow-neon-blue;
+  }
+
+  .btn-neon-secondary {
+    @apply relative overflow-hidden bg-transparent text-neonPurple border border-neonPurple rounded px-6 py-2 uppercase tracking-widest font-bold transition-all duration-300 hover:bg-neonPurple hover:text-background hover:shadow-neon-purple;
+  }
+
+  .input-futuristic {
+    @apply w-full bg-surface border border-[rgba(255,255,255,0.1)] rounded px-4 py-3 text-textMain focus:outline-none focus:border-neonBlue focus:ring-1 focus:ring-neonBlue transition-all duration-300 placeholder-textSub;
+  }
+}
