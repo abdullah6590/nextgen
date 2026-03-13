@@ -33,7 +33,7 @@ export default function ProductDetailsPage() {
     const fetchProduct = async () => {
       try {
         // Send userId if available for Kafka view tracking
-        const storedToken = localStorage.getItem('token');
+        const storedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
         let userId = '';
         if (storedToken) {
           try {

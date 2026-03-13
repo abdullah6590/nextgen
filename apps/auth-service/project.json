@@ -4,6 +4,12 @@
   "sourceRoot": "apps/auth-service/src",
   "projectType": "application",
   "targets": {
+    "generate-client": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx prisma generate --schema=apps/auth-service/prisma/schema.prisma"
+      }
+    },
     "prune-lockfile": {
       "dependsOn": ["build"],
       "cache": true,

@@ -30,7 +30,8 @@ export default function OrdersPage() {
 
   useEffect(() => {
     // If auth state is verified and user is missing, redirect immediately
-    if (user === null && !localStorage.getItem('token')) {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (user === null && !token) {
        router.push('/login');
        return;
     }
@@ -53,7 +54,8 @@ export default function OrdersPage() {
     }
   }, [user, router]);
 
-  if (!isAuthenticated && !localStorage.getItem('token')) return null; // let useEffect redirect
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  if (!isAuthenticated && !token) return null; // let useEffect redirect
 
   if (loading) {
     return (
