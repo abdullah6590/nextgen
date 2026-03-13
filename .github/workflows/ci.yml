@@ -31,37 +31,78 @@ jobs:
         image: mongo:6
         ports:
           - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand({ping:1})' --quiet"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      kafka:
+        image: bitnami/kafka:3.6
+        env:
+          KAFKA_CFG_NODE_ID: 1
+          KAFKA_CFG_PROCESS_ROLES: broker,controller
+          KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+          KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+          KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+          KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+          ALLOW_PLAINTEXT_LISTENER: 'yes'
+        ports:
+          - 9092:9092
+        options: >-
+          --health-cmd "kafka-broker-api-versions.sh --bootstrap-server localhost:9092"
+          --health-interval 10s
+          --health-timeout 10s
+          --health-retries 10
     env:
       DATABASE_URL: postgresql://user:password@localhost:5432/eshop?schema=public
       MONGODB_URI: mongodb://localhost:27017/eshop_products
+      JWT_SECRET: ci-test-secret
     steps:
       - uses: actions/checkout@v4
         with:
           filter: tree:0
           fetch-depth: 0
 
-      
       # This enables task distribution via Nx Cloud
       # Run this command as early as possible, before dependencies are installed
       # Learn more at https://nx.dev/ci/reference/nx-cloud-cli#npx-nxcloud-startcirun
       # Uncomment this line to enable task distribution
       # - run: npx nx start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="build"
 
-      
       # Cache node_modules
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: 'npm'
-       
+
       - run: npm ci
-      
+
       - name: Generate Prisma Clients
         run: npx nx run-many -t generate-client
 
-      # Prepend any command with "nx-cloud record --" to record its logs to Nx Cloud
-      # - run: npx nx-cloud record -- echo Hello World
-      - run: npx nx run-many -t lint test build typecheck
+      - name: Run Prisma Migrations
+        run: |
+          npx prisma migrate deploy --schema=apps/auth-service/prisma/schema.prisma
+          npx prisma migrate deploy --schema=apps/order-service/prisma/schema.prisma
+
+      # Build, typecheck, lint, and unit tests (no E2E)
+      - name: Build, Typecheck, Lint & Unit Tests
+        run: npx nx run-many -t lint test build typecheck --exclude='*-e2e'
+
+      # Start microservices in the background for E2E tests
+      - name: Start Services for E2E Tests
+        run: |
+          npx nx run auth-service:serve &
+          npx nx run product-service:serve &
+          npx nx run order-service:serve &
+          npx nx run api-gateway:serve &
+          sleep 15
+
+      # Run E2E tests now that services are alive
+      - name: Run E2E Tests
+        run: npx nx run-many -t e2e
+
       # Nx Cloud recommends fixes for failures to help you get CI green faster. Learn more: https://nx.dev/ci/features/self-healing-ci
       - run: npx nx fix-ci
         if: always()
