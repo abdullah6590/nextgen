@@ -36,15 +36,15 @@ export default function LoginPage() {
     <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-6 py-12">
       <Card className="w-full max-w-md relative overflow-hidden">
         {/* Decorative corner glow */}
-        <div className="absolute -top-10 -right-10 w-32 h-32 bg-neonPink/20 blur-3xl rounded-full pointer-events-none"></div>
-        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-neonBlue/20 blur-3xl rounded-full pointer-events-none"></div>
+        <div className="absolute -top-10 -right-10 w-32 h-32 bg-neon-pink/20 blur-3xl rounded-full pointer-events-none"></div>
+        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-neon-blue/20 blur-3xl rounded-full pointer-events-none"></div>
 
         <div className="relative z-10">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-textSub uppercase mb-2">
+            <h1 className="text-3xl font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-text-sub uppercase mb-2">
               System Access
             </h1>
-            <p className="text-textSub text-sm font-mono opacity-60">Initialize authentication protocol</p>
+            <p className="text-text-sub text-sm font-mono opacity-60">Initialize authentication protocol</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -77,8 +77,8 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-8 text-center text-sm text-textSub">
-            Unregistered entity? <a href="/register" className="text-neonPink hover:text-white transition-colors uppercase tracking-widest font-bold ml-2">Request Access</a>
+          <div className="mt-8 text-center text-sm text-text-sub">
+            Unregistered entity? <a href="/register" className="text-neon-pink hover:text-white transition-colors uppercase tracking-widest font-bold ml-2">Request Access</a>
           </div>
         </div>
       </Card>

@@ -51,10 +51,10 @@ export default function ProductsPage() {
     <div className="max-w-7xl mx-auto px-6 py-12">
       <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
         <div>
-          <h1 className="text-4xl font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-neonBlue to-white uppercase mb-2">
+          <h1 className="text-4xl font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-neon-blue to-white uppercase mb-2">
             Hardware Catalog
           </h1>
-          <p className="text-textSub font-mono text-sm opacity-60">Browse available cybernetics and upgrades</p>
+          <p className="text-text-sub font-mono text-sm opacity-60">Browse available cybernetics and upgrades</p>
         </div>
 
         <form onSubmit={handleSearch} className="flex gap-2 w-full md:w-auto">
@@ -63,7 +63,7 @@ export default function ProductsPage() {
              placeholder="Search inventory..." 
              value={search}
              onChange={(e) => setSearch(e.target.value)}
-             className="w-full md:w-64 bg-surfaceHover border-[rgba(255,255,255,0.1)] focus:border-neonBlue"
+             className="w-full md:w-64 bg-surface-hover border-[rgba(255,255,255,0.1)] focus:border-neon-blue"
              style={{ marginTop: 0 }}
            />
            <Button type="submit" variant="primary">Scan</Button>
@@ -72,22 +72,22 @@ export default function ProductsPage() {
 
       {loading ? (
         <div className="flex justify-center items-center h-64">
-           <div className="w-16 h-16 border-4 border-neonBlue border-t-transparent rounded-full animate-spin"></div>
+           <div className="w-16 h-16 border-4 border-neon-blue border-t-transparent rounded-full animate-spin"></div>
         </div>
       ) : products.length === 0 ? (
         <div className="text-center py-20 bg-surface rounded-xl border border-[rgba(255,255,255,0.05)]">
-           <span className="text-textSub uppercase tracking-widest font-mono">No matching tech found.</span>
+           <span className="text-text-sub uppercase tracking-widest font-mono">No matching tech found.</span>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.map((product) => (
-            <Card key={product._id} className="group hover:-translate-y-2 transition-transform duration-300 flex flex-col p-4 border border-[rgba(255,255,255,0.05)] hover:border-neonBlue/50">
-              <Link href={`/products/${product._id}`} className="block relative aspect-square bg-surfaceHover rounded overflow-hidden mb-4">
+            <Card key={product._id} className="group hover:-translate-y-2 transition-transform duration-300 flex flex-col p-4 border border-[rgba(255,255,255,0.05)] hover:border-neon-blue/50">
+              <Link href={`/products/${product._id}`} className="block relative aspect-square bg-surface-hover rounded overflow-hidden mb-4">
                 {product.images?.[0] ? (
                   <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center">
-                     <span className="text-neonBlue opacity-30 font-mono text-sm">IMAGE_SYS_ERR</span>
+                     <span className="text-neon-blue opacity-30 font-mono text-sm">IMAGE_SYS_ERR</span>
                   </div>
                 )}
                 {product.stock <= 0 && (
@@ -98,12 +98,12 @@ export default function ProductsPage() {
               </Link>
 
               <div className="flex-grow flex flex-col">
-                <div className="text-[10px] text-neonPurple font-mono uppercase tracking-widest mb-1">{product.category || 'Gear'}</div>
-                <Link href={`/products/${product._id}`} className="hover:text-neonBlue transition-colors">
+                <div className="text-[10px] text-neon-purple font-mono uppercase tracking-widest mb-1">{product.category || 'Gear'}</div>
+                <Link href={`/products/${product._id}`} className="hover:text-neon-blue transition-colors">
                   <h3 className="font-bold text-lg leading-tight mb-2 line-clamp-2">{product.name}</h3>
                 </Link>
                 <div className="mt-auto flex items-center justify-between pt-4 border-t border-[rgba(255,255,255,0.05)]">
-                  <span className="text-xl font-bold font-mono text-neonBlue">${product.price.toFixed(2)}</span>
+                  <span className="text-xl font-bold font-mono text-neon-blue">${product.price.toFixed(2)}</span>
                   <Button 
                     variant="glass" 
                     className="p-2 !px-3 text-xs"

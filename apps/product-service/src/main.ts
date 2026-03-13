@@ -2,6 +2,7 @@ import express from 'express';
 import * as path from 'path';
 import mongoose, { Schema, Document } from 'mongoose';
 import { Kafka } from 'kafkajs';
+import { authMiddleware, AuthenticatedRequest } from '../../../libs/shared/authMiddleware';
 
 const app = express();
 app.use(express.json());
@@ -56,18 +57,9 @@ const runProducer = async () => {
 };
 runProducer().catch(console.error);
 
-// Endpoints
-
-// Create Product
-app.post('/', async (req, res) => {
-  try {
-    const product = new Product(req.body);
-    await product.save();
-    res.status(201).json(product);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
+// =============================================
+// PUBLIC ENDPOINTS (no auth required)
+// =============================================
 
 // Get Products (Pagination + Search)
 app.get('/', async (req, res) => {
@@ -101,6 +93,9 @@ app.get('/', async (req, res) => {
 
 // Get Single Product
 app.get('/:id', async (req, res) => {
+  // Skip if this is an internal route (handled below)
+  if (req.params.id === 'internal') return;
+
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
@@ -121,6 +116,79 @@ app.get('/:id', async (req, res) => {
     }
 
     res.json(product);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// =============================================
+// PROTECTED ENDPOINTS (auth required)
+// =============================================
+
+// Create Product (authenticated users only)
+app.post('/', authMiddleware as any, async (req: AuthenticatedRequest, res) => {
+  try {
+    const product = new Product(req.body);
+    await product.save();
+    res.status(201).json(product);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// =============================================
+// INTERNAL SERVICE-TO-SERVICE ENDPOINTS
+// These are called by order-service, not by the frontend
+// =============================================
+
+// Get stock info for a product
+app.get('/internal/:id/stock', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id).select('name price stock');
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    res.json({ 
+      productId: product._id,
+      name: product.name, 
+      price: product.price, 
+      stock: product.stock 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Decrement stock for a product
+app.patch('/internal/:id/decrement', async (req, res) => {
+  const { quantity } = req.body;
+
+  if (!quantity || quantity <= 0) {
+    return res.status(400).json({ error: 'Valid quantity is required' });
+  }
+
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    if (product.stock < quantity) {
+      return res.status(400).json({ 
+        error: 'Insufficient stock', 
+        available: product.stock, 
+        requested: quantity 
+      });
+    }
+
+    product.stock -= quantity;
+    await product.save();
+
+    res.json({ 
+      productId: product._id,
+      name: product.name,
+      stock: product.stock 
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

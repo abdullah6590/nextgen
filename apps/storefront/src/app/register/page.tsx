@@ -34,15 +34,15 @@ export default function RegisterPage() {
     <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-6 py-12">
       <Card className="w-full max-w-md relative overflow-hidden">
         {/* Decorative corner glow */}
-        <div className="absolute -top-10 -right-10 w-32 h-32 bg-neonBlue/20 blur-3xl rounded-full pointer-events-none"></div>
-        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-neonPurple/20 blur-3xl rounded-full pointer-events-none"></div>
+        <div className="absolute -top-10 -right-10 w-32 h-32 bg-neon-blue/20 blur-3xl rounded-full pointer-events-none"></div>
+        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-neon-purple/20 blur-3xl rounded-full pointer-events-none"></div>
 
         <div className="relative z-10">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-neonBlue to-white uppercase mb-2">
-              New Entity Reg
+            <h1 className="text-3xl font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-neon-blue to-white uppercase mb-2">
+              Create Account
             </h1>
-            <p className="text-textSub text-sm font-mono opacity-60">Establish connection to mainframe</p>
+            <p className="text-text-sub text-sm font-mono opacity-60">Establish connection to mainframe</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -76,8 +76,8 @@ export default function RegisterPage() {
             </Button>
           </form>
 
-          <div className="mt-8 text-center text-sm text-textSub">
-            Already registered? <a href="/login" className="text-neonBlue hover:text-white transition-colors uppercase tracking-widest font-bold ml-2">Login</a>
+          <div className="mt-8 text-center text-sm text-text-sub">
+            Already registered? <a href="/login" className="text-neon-blue hover:text-white transition-colors uppercase tracking-widest font-bold ml-2">Login</a>
           </div>
         </div>
       </Card>

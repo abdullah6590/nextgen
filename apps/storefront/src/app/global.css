@@ -1,11 +1,34 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@theme {
+  --color-background: #040714;
+  --color-surface: #0d1326;
+  --color-surface-hover: #161e38;
+  --color-neon-blue: #00f0ff;
+  --color-neon-purple: #8a2be2;
+  --color-neon-pink: #ff007f;
+  --color-text-main: #ffffff;
+  --color-text-sub: #94a3b8;
+
+  --font-sans: var(--font-inter), sans-serif;
+
+  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-float: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
 
 @layer base {
   body {
-    @apply bg-background text-textMain min-h-screen relative overflow-x-hidden;
-    /* Custom scrollbar */
+    @apply bg-background text-text-main min-h-screen relative overflow-x-hidden;
   }
 
   /* Webkit custom scrollbar */
@@ -16,29 +39,47 @@
     @apply bg-background;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-surfaceHover rounded-full;
+    @apply bg-surface-hover rounded-full;
   }
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-neonPurple;
+    @apply bg-neon-purple;
   }
 }
 
 @layer components {
   /* Glassmorphism Panel */
   .glass-panel {
-    @apply bg-glass-gradient backdrop-blur-md border border-[rgba(255,255,255,0.1)] rounded-xl shadow-glass;
+    @apply backdrop-blur-md border border-[rgba(255,255,255,0.1)] rounded-xl;
+    background-image: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.01) 100%
+    );
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
   }
 
   /* Futuristic Buttons */
   .btn-neon-primary {
-    @apply relative overflow-hidden bg-transparent text-neonBlue border border-neonBlue rounded px-6 py-2 uppercase tracking-widest font-bold transition-all duration-300 hover:bg-neonBlue hover:text-background hover:shadow-neon-blue;
+    @apply relative overflow-hidden bg-transparent text-neon-blue border border-neon-blue rounded px-6 py-2 uppercase tracking-widest font-bold transition-all duration-300;
+    &:hover {
+      @apply bg-neon-blue text-background;
+      box-shadow:
+        0 0 10px rgba(0, 240, 255, 0.5),
+        0 0 20px rgba(0, 240, 255, 0.3);
+    }
   }
 
   .btn-neon-secondary {
-    @apply relative overflow-hidden bg-transparent text-neonPurple border border-neonPurple rounded px-6 py-2 uppercase tracking-widest font-bold transition-all duration-300 hover:bg-neonPurple hover:text-background hover:shadow-neon-purple;
+    @apply relative overflow-hidden bg-transparent text-neon-purple border border-neon-purple rounded px-6 py-2 uppercase tracking-widest font-bold transition-all duration-300;
+    &:hover {
+      @apply bg-neon-purple text-background;
+      box-shadow:
+        0 0 10px rgba(138, 43, 226, 0.5),
+        0 0 20px rgba(138, 43, 226, 0.3);
+    }
   }
 
   .input-futuristic {
-    @apply w-full bg-surface border border-[rgba(255,255,255,0.1)] rounded px-4 py-3 text-textMain focus:outline-none focus:border-neonBlue focus:ring-1 focus:ring-neonBlue transition-all duration-300 placeholder-textSub;
+    @apply w-full bg-surface border border-[rgba(255,255,255,0.1)] rounded px-4 py-3 text-text-main focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition-all duration-300 placeholder-text-sub;
   }
 }
