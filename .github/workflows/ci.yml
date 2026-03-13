@@ -10,9 +10,19 @@ permissions:
   actions: read
   contents: read
 
+# Set a default working directory if the monorepo is in a subfolder
+defaults:
+  run:
+    working-directory: .
+
 jobs:
   main:
     runs-on: ubuntu-latest
+    
+    # Run the entire job in the subfolder if detected, otherwise root
+    # Note: If your monorepo is in a subfolder like 'eshop', set this to 'eshop'
+    # For now, we use a step to detect it and fail fast with a clear message.
+    
     services:
       postgres:
         image: postgres:15
@@ -64,45 +74,71 @@ jobs:
           filter: tree:0
           fetch-depth: 0
 
-      - name: Debug Workspace Structure
+      - name: Locate Workspace Root
+        id: locate
         run: |
-          echo "Current Path: $(pwd)"
-          ls -F
-          if [ -f "nx.json" ]; then echo "nx.json found"; else echo "nx.json NOT found"; fi
+          if [ -f "nx.json" ]; then
+            echo "ROOT=." >> $GITHUB_ENV
+            echo "Workspace found at root"
+          elif [ -f "eshop/nx.json" ]; then
+            echo "ROOT=eshop" >> $GITHUB_ENV
+            echo "Workspace found at eshop/"
+          else
+            echo "Searching for nx.json..."
+            SEARCH_RESULT=$(find . -name nx.json -maxdepth 2 | head -n 1)
+            if [ -z "$SEARCH_RESULT" ]; then
+              echo "::error::Could not find nx.json. Please ensure your Nx workspace is checked out correctly."
+              exit 1
+            fi
+            ROOT=$(dirname "$SEARCH_RESULT" | sed 's|^\./||')
+            echo "ROOT=$ROOT" >> $GITHUB_ENV
+            echo "Workspace found at $ROOT"
+          fi
 
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: 'npm'
+          cache-dependency-path: "${{ env.ROOT }}/package-lock.json"
 
-      - run: npm ci
+      - name: Install dependencies
+        working-directory: ${{ env.ROOT }}
+        run: npm ci
 
       - name: Verify Nx Binary
+        working-directory: ${{ env.ROOT }}
         run: |
           ./node_modules/.bin/nx --version
           npx nx --version
 
       - name: Generate Prisma Clients
+        working-directory: ${{ env.ROOT }}
         run: npx nx run-many -t generate-client
 
       - name: Run Prisma Migrations
+        working-directory: ${{ env.ROOT }}
         run: |
           npx prisma migrate deploy --schema=apps/auth-service/prisma/schema.prisma
           npx prisma migrate deploy --schema=apps/order-service/prisma/schema.prisma
 
       - name: Build, Typecheck, Lint & Unit Tests
+        working-directory: ${{ env.ROOT }}
         run: npx nx run-many -t lint test build typecheck --exclude='*-e2e'
 
       - name: Start Services for E2E Tests
+        working-directory: ${{ env.ROOT }}
         run: |
           npx nx run auth-service:serve &
           npx nx run product-service:serve &
           npx nx run order-service:serve &
           npx nx run api-gateway:serve &
-          sleep 15
+          sleep 30
 
       - name: Run E2E Tests
+        working-directory: ${{ env.ROOT }}
         run: npx nx run-many -t e2e
 
-      - run: npx nx fix-ci
+      - name: Fix CI
         if: always()
+        working-directory: ${{ env.ROOT }}
+        run: npx nx fix-ci
