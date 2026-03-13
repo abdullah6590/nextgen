@@ -2,11 +2,14 @@ import express from 'express';
 import * as path from 'path';
 import axios from 'axios';
 import { PrismaClient } from './generated/client/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 import { authMiddleware, AuthenticatedRequest } from '../../../libs/shared/authMiddleware';
 
 const app = express();
-// @ts-ignore
-const prisma = new PrismaClient({});
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool as any);
+const prisma = new PrismaClient({ adapter: adapter as any } as any);
 
 const PRODUCT_SERVICE_URL = process.env.PRODUCT_SERVICE_URL || 'http://localhost:3002';
 

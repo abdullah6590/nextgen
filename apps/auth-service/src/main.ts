@@ -1,12 +1,15 @@
 import express from 'express';
 import * as path from 'path';
 import { PrismaClient } from './generated/client/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 
 const app = express();
-// @ts-ignore
-const prisma = new PrismaClient({});
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool as any);
+const prisma = new PrismaClient({ adapter: adapter as any } as any);
 const SECRET_KEY = process.env.JWT_SECRET || 'supersecret';
 
 app.use(express.json());
