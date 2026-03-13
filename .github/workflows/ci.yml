@@ -57,26 +57,20 @@ jobs:
           --health-interval 10s
           --health-timeout 10s
           --health-retries 10
+
     env:
       DATABASE_URL: postgresql://user:password@localhost:5432/eshop?schema=public
       MONGODB_URI: mongodb://localhost:27017/eshop_products
       JWT_SECRET: ci-test-secret
+
     steps:
       - uses: actions/checkout@v4
         with:
-          filter: tree:0
           fetch-depth: 0
 
-      # This enables task distribution via Nx Cloud
-      # Run this command as early as possible, before dependencies are installed
-      # Learn more at https://nx.dev/ci/reference/nx-cloud-cli#npx-nxcloud-startcirun
-      # Uncomment this line to enable task distribution
-      # - run: npx nx start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="build"
-
-      # Cache node_modules
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 20 # Note: Node 24 is very new, 20 is the current stable LTS for Nx
           cache: 'npm'
 
       - run: npm ci
@@ -89,23 +83,22 @@ jobs:
           npx prisma migrate deploy --schema=apps/auth-service/prisma/schema.prisma
           npx prisma migrate deploy --schema=apps/order-service/prisma/schema.prisma
 
-      # Build, typecheck, lint, and unit tests (no E2E)
       - name: Build, Typecheck, Lint & Unit Tests
         run: npx nx run-many -t lint test build typecheck --exclude='*-e2e'
 
-      # Start microservices in the background for E2E tests
-      - name: Start Services for E2E Tests
+      - name: Start Services & Run E2E
         run: |
-          npx nx run auth-service:serve &
-          npx nx run product-service:serve &
-          npx nx run order-service:serve &
-          npx nx run api-gateway:serve &
-          sleep 15
+          # Install wait-on specifically for the health check
+          npm install wait-on
 
-      # Run E2E tests now that services are alive
-      - name: Run E2E Tests
-        run: npx nx run-many -t e2e
+          # Start services in background
+          npx nx run-many -t serve --projects=auth-service,product-service,order-service,api-gateway &
 
-      # Nx Cloud recommends fixes for failures to help you get CI green faster. Learn more: https://nx.dev/ci/features/self-healing-ci
+          # Wait for the Gateway to respond on port 8080 before running tests
+          npx wait-on http://localhost:8080 -t 120000
+
+          # Run E2E
+          npx nx run-many -t e2e
+
       - run: npx nx fix-ci
         if: always()
