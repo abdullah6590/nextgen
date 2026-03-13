@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   displayName: 'order-service-e2e',
   preset: '../../jest.preset.js',
   globalSetup: '<rootDir>/src/support/global-setup.ts',
