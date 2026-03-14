@@ -17,7 +17,7 @@ jobs:
     # This ensures that if ROOT isn't set yet, we default to eshop
     defaults:
       run:
-        working-directory: eshop
+        working-directory: .
 
     services:
       postgres:
@@ -77,7 +77,7 @@ jobs:
         with:
           node-version: 24
           cache: 'npm'
-          cache-dependency-path: 'eshop/package-lock.json'
+          cache-dependency-path: 'package-lock.json'
 
       - name: Install dependencies
         run: npm ci
