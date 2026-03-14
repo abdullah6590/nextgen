@@ -10,19 +10,15 @@ permissions:
   actions: read
   contents: read
 
-# Set a default working directory if the monorepo is in a subfolder
-defaults:
-  run:
-    working-directory: .
-
 jobs:
-  main:
+  build:
     runs-on: ubuntu-latest
-    
-    # Run the entire job in the subfolder if detected, otherwise root
-    # Note: If your monorepo is in a subfolder like 'eshop', set this to 'eshop'
-    # For now, we use a step to detect it and fail fast with a clear message.
-    
+
+    # This ensures that if ROOT isn't set yet, we default to eshop
+    defaults:
+      run:
+        working-directory: eshop
+
     services:
       postgres:
         image: postgres:15
@@ -64,50 +60,29 @@ jobs:
           --health-interval 10s
           --health-timeout 10s
           --health-retries 10
+
     env:
-      ROOT: .
       DATABASE_URL: postgresql://user:password@localhost:5432/eshop?schema=public
       MONGODB_URI: mongodb://localhost:27017/eshop_products
       JWT_SECRET: ci-test-secret
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          filter: tree:0
           fetch-depth: 0
 
-      - name: Locate Workspace Root
-        id: locate
-        run: |
-          if [ -f "nx.json" ]; then
-            echo "ROOT=." >> $GITHUB_ENV
-            echo "Workspace found at root"
-          elif [ -f "eshop/nx.json" ]; then
-            echo "ROOT=eshop" >> $GITHUB_ENV
-            echo "Workspace found at eshop/"
-          else
-            echo "Searching for nx.json..."
-            SEARCH_RESULT=$(find . -name nx.json -maxdepth 2 | head -n 1)
-            if [ -z "$SEARCH_RESULT" ]; then
-              echo "::error::Could not find nx.json. Please ensure your Nx workspace is checked out correctly."
-              exit 1
-            fi
-            ROOT=$(dirname "$SEARCH_RESULT" | sed 's|^\./||')
-            echo "ROOT=$ROOT" >> $GITHUB_ENV
-            echo "Workspace found at $ROOT"
-          fi
-
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: 'npm'
-          cache-dependency-path: "${{ env.ROOT || '.' }}/package-lock.json"
+          cache-dependency-path: 'eshop/package-lock.json'
 
       - name: Install dependencies
-        working-directory: ${{ env.ROOT || '.' }}
         run: npm ci
 
       - name: Verify Nx Binary
-        working-directory: ${{ env.ROOT || '.' }}
         run: |
           if [ -f "./node_modules/.bin/nx" ]; then
             ./node_modules/.bin/nx --version
@@ -116,34 +91,27 @@ jobs:
           fi
 
       - name: Generate Prisma Clients
-        working-directory: ${{ env.ROOT || '.' }}
-        run: ./node_modules/.bin/nx run-many -t generate-client
+        run: npx nx run-many -t generate-client
 
       - name: Run Prisma Migrations
-        working-directory: ${{ env.ROOT || '.' }}
         run: |
           npx prisma migrate deploy --schema=apps/auth-service/prisma/schema.prisma
           npx prisma migrate deploy --schema=apps/order-service/prisma/schema.prisma
 
       - name: Build, Typecheck, Lint & Unit Tests
-        working-directory: ${{ env.ROOT || '.' }}
-        run: ./node_modules/.bin/nx run-many -t lint test build typecheck --exclude='*-e2e'
+        run: npx nx run-many -t lint test build typecheck --exclude='*-e2e'
 
       - name: Start Services for E2E Tests
-        working-directory: ${{ env.ROOT || '.' }}
         run: |
-          ./node_modules/.bin/nx run auth-service:serve &
-          ./node_modules/.bin/nx run product-service:serve &
-          ./node_modules/.bin/nx run order-service:serve &
-          ./node_modules/.bin/nx run api-gateway:serve &
-          sleep 30
+          npx nx run auth-service:serve &
+          npx nx run product-service:serve &
+          npx nx run order-service:serve &
+          npx nx run api-gateway:serve &
+          sleep 60
 
       - name: Run E2E Tests
-        working-directory: ${{ env.ROOT || '.' }}
-        run: ./node_modules/.bin/nx run-many -t e2e
+        run: npx nx run-many -t e2e
 
       - name: CI Diagnostics
         if: always()
-        working-directory: ${{ env.ROOT || '.' }}
-        run: |
-          ./node_modules/.bin/nx report || npx nx report
+        run: npx nx report
