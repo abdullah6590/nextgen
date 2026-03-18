@@ -1,24 +1,28 @@
 'use client';
 
 import React from 'react';
-import { GlassSidebar } from '../components/neural/GlassSidebar';
-import { CentralSearchHub } from '../components/neural/CentralSearchHub';
-import { VisualSearch } from '../components/neural/VisualSearch';
-import { NewAssets } from '../components/neural/NewAssets';
-import { PopularVendors } from '../components/neural/PopularVendors';
-import { FeaturedProduct } from '../components/neural/FeaturedProduct';
-import { Footer } from '../components/neural/Footer';
+import { TopNav } from '../../components/neural/TopNav';
+import { GlassSidebar } from '../../components/neural/GlassSidebar';
+import { CentralSearchHub } from '../../components/neural/CentralSearchHub';
+import { VisualSearch } from '../../components/neural/VisualSearch';
+import { NewAssets } from '../../components/neural/NewAssets';
+import { PopularVendors } from '../../components/neural/PopularVendors';
+import { FeaturedProduct } from '../../components/neural/FeaturedProduct';
+import { SystemMetrics } from '../../components/neural/SystemMetrics';
+import { Footer } from '../../components/neural/Footer';
 
 export default function NeuralMarketplacePage() {
   return (
     <div className="bg-[#09090b] text-on-surface font-body selection:bg-primary/30 min-h-screen flex flex-col relative overflow-x-hidden">
+      <TopNav />
       <GlassSidebar />
       
-      <main className="pt-32 pb-24 px-8 max-w-[1920px] mx-auto z-10 relative">
-        <div className="bento-grid">
+      <main className="pt-32 pb-24 px-4 sm:px-8 max-w-[1920px] mx-auto w-full flex-1 z-10">
+        <div className="grid grid-cols-12 auto-rows-min gap-4 sm:gap-6 w-full">
           <CentralSearchHub />
           <VisualSearch />
           <NewAssets />
+          <SystemMetrics />
           <PopularVendors />
           
           {/* Featured Product 1 */}

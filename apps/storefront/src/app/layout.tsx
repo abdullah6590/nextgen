@@ -1,7 +1,7 @@
 import './global.css';
 import { Inter } from 'next/font/google';
 import { Providers } from '../components/Providers';
-import { Navbar } from '../components/Navbar';
+import { TopNav } from '../components/neural/TopNav';
 import { CartDrawer } from '../components/CartDrawer';
 
 const inter = Inter({
@@ -30,7 +30,7 @@ export default function RootLayout({
             <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-neon-blue/20 blur-[120px] rounded-full mix-blend-screen" />
           </div>
 
-          <Navbar />
+          <TopNav />
           <CartDrawer />
 
           {/* Main Content */}

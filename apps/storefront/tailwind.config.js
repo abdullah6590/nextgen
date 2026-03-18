@@ -1,14 +1,64 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: "class",
   content: [
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       colors: {
-        background: '#040714',
-        surface: '#0d1326',
+        // Snippet colors
+        "on-secondary": "#3c0091",
+        "tertiary-fixed": "#ffe083",
+        "tertiary": "#eec200",
+        "inverse-on-surface": "#313032",
+        "surface-container-lowest": "#0e0e10",
+        "on-error-container": "#ffdad6",
+        "background": "#131315",
+        "on-secondary-fixed": "#23005c",
+        "on-tertiary-fixed": "#231b00",
+        "on-primary-container": "#00424f",
+        "outline-variant": "#3d494c",
+        "surface-bright": "#39393b",
+        "surface-tint": "#4cd7f6",
+        "on-primary-fixed-variant": "#004e5c",
+        "secondary-fixed-dim": "#d0bcff",
+        "surface-container-low": "#1c1b1d",
+        "primary-fixed-dim": "#4cd7f6",
+        "primary-fixed": "#acedff",
+        "on-background": "#e5e1e4",
+        "on-primary-fixed": "#001f26",
+        "surface-dim": "#131315",
+        "surface-variant": "#353437",
+        "inverse-primary": "#00687a",
+        "secondary-fixed": "#e9ddff",
+        "surface": "#131315",
+        "on-error": "#690005",
+        "primary-container": "#06b6d4",
+        "surface-container": "#201f22",
+        "on-tertiary-fixed-variant": "#574500",
+        "outline": "#869397",
+        "tertiary-fixed-dim": "#eec200",
+        "secondary-container": "#571bc1",
+        "surface-container-highest": "#353437",
+        "on-tertiary-container": "#493a00",
+        "primary": "#4cd7f6",
+        "on-secondary-container": "#c4abff",
+        "on-tertiary": "#3c2f00",
+        "surface-container-high": "#2a2a2c",
+        "on-surface": "#e5e1e4",
+        "error-container": "#93000a",
+        "on-surface-variant": "#bcc9cd",
+        "inverse-surface": "#e5e1e4",
+        "error": "#ffb4ab",
+        "tertiary-container": "#c8a200",
+        "secondary": "#d0bcff",
+        "on-secondary-fixed-variant": "#5516be",
+        "on-primary": "#003640",
+        
+        // Old colors
         surfaceHover: '#161e38',
         neonBlue: '#00f0ff',
         neonPurple: '#8a2be2',
@@ -22,24 +72,41 @@ module.exports = {
         'glass-gradient': 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)',
       },
       fontFamily: {
+        headline: ["Space Grotesk", "sans-serif"],
+        body: ["Inter", "sans-serif"],
+        label: ["Inter", "sans-serif"],
         sans: ['var(--font-inter)', 'sans-serif'],
       },
       boxShadow: {
         'neon-blue': '0 0 10px rgba(0, 240, 255, 0.5), 0 0 20px rgba(0, 240, 255, 0.3)',
         'neon-purple': '0 0 10px rgba(138, 43, 226, 0.5), 0 0 20px rgba(138, 43, 226, 0.3)',
         'glass': '0 4px 30px rgba(0, 0, 0, 0.1)',
+        'btn-cyan': '0 0 15px rgba(6, 182, 212, 0.4)',
+        'btn-violet': '0 0 25px rgba(139, 92, 246, 0.5)',
       },
       animation: {
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'float': 'float 6s ease-in-out infinite',
+        'pulse-cyan': 'pulse-cyan 2s infinite ease-in-out',
+        'pulse-violet': 'pulse-violet 2s infinite ease-in-out',
       },
       keyframes: {
         float: {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-20px)' },
+        },
+        'pulse-cyan': {
+          '0%, 100%': { boxShadow: '0 0 10px rgba(6, 182, 212, 0.3)' },
+          '50%': { boxShadow: '0 0 20px rgba(6, 182, 212, 0.6)' },
+        },
+        'pulse-violet': {
+          '0%, 100%': { boxShadow: '0 0 15px rgba(139, 92, 246, 0.4)' },
+          '50%': { boxShadow: '0 0 35px rgba(139, 92, 246, 0.8)' },
         }
       }
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/container-queries'),
+  ],
 };

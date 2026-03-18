@@ -8,6 +8,8 @@
     "@prisma/adapter-pg": "^7.1.0",
     "@prisma/client": "^7.1.0",
     "@prisma/config": "^7.1.0",
+    "@tailwindcss/container-queries": "^0.1.1",
+    "@tailwindcss/forms": "^0.5.11",
     "@tailwindcss/postcss": "^4.2.0",
     "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
