@@ -13,7 +13,7 @@
     ],
     "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
   },
-  "nxCloudId": "693ba8b66f3b7e30e38cc721",
+  "nxCloudId": "69bc27e0cb7c5471a4a92939",
   "plugins": [
     {
       "plugin": "@nx/webpack/plugin",
@@ -74,6 +74,20 @@
       "options": {
         "targetName": "e2e"
       }
+    },
+    {
+      "plugin": "@nx/vite/plugin",
+      "options": {
+        "buildTargetName": "build",
+        "testTargetName": "test",
+        "serveTargetName": "serve",
+        "devTargetName": "dev",
+        "previewTargetName": "preview",
+        "serveStaticTargetName": "serve-static",
+        "typecheckTargetName": "typecheck",
+        "buildDepsTargetName": "build-deps",
+        "watchDepsTargetName": "watch-deps"
+      }
     }
   ],
   "targetDefaults": {
@@ -93,5 +107,6 @@
         "linter": "none"
       }
     }
-  }
+  },
+  "analytics": true
 }
