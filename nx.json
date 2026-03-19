@@ -13,7 +13,7 @@
     ],
     "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
   },
-  "nxCloudId": "693ba8b66f3b7e30e38cc721",
+  "nxCloudId": "69bc2830e071c9039e0d8588",
   "plugins": [
     {
       "plugin": "@nx/webpack/plugin",
@@ -29,9 +29,7 @@
     {
       "plugin": "@nx/js/typescript",
       "options": {
-        "typecheck": {
-          "targetName": "typecheck"
-        },
+        "typecheck": { "targetName": "typecheck" },
         "build": {
           "targetName": "build",
           "configName": "tsconfig.lib.json",
@@ -42,20 +40,14 @@
     },
     {
       "plugin": "@nx/jest/plugin",
-      "options": {
-        "targetName": "test"
-      },
+      "options": { "targetName": "test" },
       "exclude": ["apps/auth-service-e2e/**/*"]
     },
     {
       "plugin": "@nx/docker",
       "options": {
-        "buildTarget": {
-          "name": "docker:build"
-        },
-        "runTarget": {
-          "name": "docker:run"
-        }
+        "buildTarget": { "name": "docker:build" },
+        "runTarget": { "name": "docker:run" }
       }
     },
     {
@@ -69,12 +61,7 @@
         "watchDepsTargetName": "watch-deps"
       }
     },
-    {
-      "plugin": "@nx/playwright/plugin",
-      "options": {
-        "targetName": "e2e"
-      }
-    }
+    { "plugin": "@nx/playwright/plugin", "options": { "targetName": "e2e" } }
   ],
   "targetDefaults": {
     "@nx/esbuild:esbuild": {
@@ -82,16 +69,9 @@
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
     },
-    "test": {
-      "dependsOn": ["^build"]
-    }
+    "test": { "dependsOn": ["^build"] }
   },
   "generators": {
-    "@nx/next": {
-      "application": {
-        "style": "css",
-        "linter": "none"
-      }
-    }
+    "@nx/next": { "application": { "style": "css", "linter": "none" } }
   }
 }
