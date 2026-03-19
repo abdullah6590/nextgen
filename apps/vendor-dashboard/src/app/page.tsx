@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 const container = {
   hidden: { opacity: 0 },
@@ -76,7 +77,7 @@ export default function DashboardPage() {
             <motion.h1 variants={item} className="font-headline text-4xl font-black tracking-tighter text-on-surface mb-8">COMMAND_CENTER.SYS</motion.h1>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Total Sales */}
-              <motion.div variants={item} className="bg-surface-container-low rounded-lg p-6 border border-outline-variant/20 flex flex-col justify-between hover:scale-[1.01] transition-transform shadow-[0_0_20px_rgba(76,215,246,0.15)]">
+              <motion.div variants={item} className="bg-surface-container-low rounded-[24px] p-6 border border-outline-variant/20 flex flex-col justify-between hover:-translate-y-1 hover:scale-[1.01] hover:border-outline-variant/40 transition-all duration-300 shadow-oled-primary">
                 <div className="flex justify-between items-start mb-4">
                   <span className="text-xs font-bold text-primary tracking-widest uppercase">Total Sales</span>
                   <span className="material-symbols-outlined text-primary/50" data-icon="payments">payments</span>
@@ -87,7 +88,7 @@ export default function DashboardPage() {
                 </div>
               </motion.div>
               {/* Vendor Rank */}
-              <motion.div variants={item} className="bg-surface-container-low rounded-lg p-6 border border-outline-variant/20 flex flex-col justify-between hover:scale-[1.01] transition-transform shadow-[0_0_20px_rgba(208,188,255,0.15)]">
+              <motion.div variants={item} className="bg-surface-container-low rounded-[24px] p-6 border border-outline-variant/20 flex flex-col justify-between hover:-translate-y-1 hover:scale-[1.01] hover:border-outline-variant/40 transition-all duration-300 shadow-oled-secondary">
                 <div className="flex justify-between items-start mb-4">
                   <span className="text-xs font-bold text-secondary tracking-widest uppercase">Vendor Rank</span>
                   <span className="material-symbols-outlined text-secondary/50" data-icon="military_tech">military_tech</span>
@@ -98,7 +99,7 @@ export default function DashboardPage() {
                 </div>
               </motion.div>
               {/* AI Recommendations */}
-              <motion.div variants={item} className="bg-surface-container-low rounded-lg p-6 border border-outline-variant/20 flex flex-col justify-between hover:scale-[1.01] transition-transform">
+              <motion.div variants={item} className="bg-surface-container-low rounded-[24px] p-6 border border-outline-variant/20 flex flex-col justify-between hover:-translate-y-1 hover:scale-[1.01] hover:border-outline-variant/40 transition-all duration-300">
                 <div className="flex justify-between items-start mb-4">
                   <span className="text-xs font-bold text-on-surface-variant tracking-widest uppercase">AI Insights</span>
                   <span className="material-symbols-outlined text-on-surface-variant/50" data-icon="auto_awesome">auto_awesome</span>
@@ -113,7 +114,7 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-12 gap-6">
             {/* Revenue Analytics Chart */}
-            <motion.div variants={item} className="col-span-12 lg:col-span-8 bg-surface-container-low rounded-lg p-8 border border-outline-variant/20 relative overflow-hidden">
+            <motion.div variants={item} className="col-span-12 lg:col-span-8 bg-surface-container-low rounded-[24px] p-8 border border-outline-variant/20 relative overflow-hidden">
               <div className="flex justify-between items-center mb-10">
                 <div>
                   <h3 className="font-headline text-xl font-bold text-on-surface">Revenue Velocity</h3>
@@ -125,7 +126,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="h-64 w-full flex items-end gap-1 relative">
-                <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+                <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 256">
                   <defs>
                     <linearGradient id="cyan-grad" x1="0" x2="0" y1="0" y2="1">
                       <stop offset="0%" stopColor="#4cd7f6" stopOpacity="0.3"></stop>
@@ -135,7 +136,7 @@ export default function DashboardPage() {
                   <path d="M0 256 L0 100 Q 100 80 200 150 T 400 50 T 600 120 T 800 30 T 1000 80 L 1000 256 Z" fill="url(#cyan-grad)"></path>
                   <path d="M0 100 Q 100 80 200 150 T 400 50 T 600 120 T 800 30 T 1000 80" fill="none" stroke="#4cd7f6" strokeWidth="3"></path>
                 </svg>
-                <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+                <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 1200 256">
                   <path d="M0 150 Q 150 180 300 120 T 600 160 T 900 100 T 1200 140" fill="none" opacity="0.4" stroke="#d0bcff" strokeDasharray="8 4" strokeWidth="2"></path>
                 </svg>
               </div>
@@ -149,42 +150,42 @@ export default function DashboardPage() {
             </motion.div>
 
             {/* Smart Inventory Alerts */}
-            <motion.div variants={item} className="col-span-12 lg:col-span-4 bg-surface-container-low rounded-lg p-8 border border-outline-variant/20 border-l-4 border-l-tertiary">
+            <motion.div variants={item} className="col-span-12 lg:col-span-4 bg-surface-container-low rounded-[24px] p-8 border border-outline-variant/20 border-l-4 border-l-tertiary">
               <div className="flex items-center gap-3 mb-6">
                 <span className="material-symbols-outlined text-tertiary" data-icon="warning">warning</span>
                 <h3 className="font-headline text-xl font-bold text-on-surface">Critical Inventory</h3>
               </div>
               <div className="space-y-6">
-                <div className="p-4 bg-surface-container-high rounded-lg border border-tertiary/20">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-bold text-on-surface">NEURAL_CORE_V2</span>
-                    <span className="text-xs font-bold text-tertiary">LOW STOCK</span>
+                <Link href="/product/neural-core-v2" className="block p-4 bg-surface-container-high rounded-lg border border-tertiary/20 hover:border-tertiary transition-all duration-300 cursor-pointer group hover:-translate-y-1 hover:scale-[1.02]">
+                  <div className="flex justify-between items-center mb-2 gap-2">
+                    <span className="text-sm font-bold text-on-surface truncate group-hover:text-primary transition-colors">NEURAL_CORE_V2</span>
+                    <span className="text-xs font-bold text-tertiary whitespace-nowrap">LOW STOCK</span>
                   </div>
                   <div className="w-full bg-surface-container-lowest h-1.5 rounded-full overflow-hidden">
                     <div className="bg-tertiary h-full w-[12%]"></div>
                   </div>
                   <p className="text-[10px] text-on-surface-variant mt-2">Predicted outage in 14 hours</p>
-                </div>
-                <div className="p-4 bg-surface-container-high rounded-lg border border-outline-variant/10">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-bold text-on-surface">PLASMA_DRIVE_8K</span>
-                    <span className="text-xs font-bold text-on-surface-variant">OPTIMAL</span>
+                </Link>
+                <Link href="/product/plasma-drive-8k" className="block p-4 bg-surface-container-high rounded-lg border border-outline-variant/10 hover:border-primary/50 transition-all duration-300 cursor-pointer group hover:-translate-y-1 hover:scale-[1.02]">
+                  <div className="flex justify-between items-center mb-2 gap-2">
+                    <span className="text-sm font-bold text-on-surface truncate group-hover:text-primary transition-colors">PLASMA_DRIVE_8K</span>
+                    <span className="text-xs font-bold text-on-surface-variant whitespace-nowrap">OPTIMAL</span>
                   </div>
                   <div className="w-full bg-surface-container-lowest h-1.5 rounded-full overflow-hidden">
                     <div className="bg-primary h-full w-[88%]"></div>
                   </div>
                   <p className="text-[10px] text-on-surface-variant mt-2">Next restock window: 4 days</p>
-                </div>
-                <div className="p-4 bg-surface-container-high rounded-lg border border-outline-variant/10">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-bold text-on-surface">QUBIT_PROCESSOR</span>
-                    <span className="text-xs font-bold text-on-surface-variant">OPTIMAL</span>
+                </Link>
+                <Link href="/product/qubit-processor" className="block p-4 bg-surface-container-high rounded-lg border border-outline-variant/10 hover:border-primary/50 transition-all duration-300 cursor-pointer group hover:-translate-y-1 hover:scale-[1.02]">
+                  <div className="flex justify-between items-center mb-2 gap-2">
+                    <span className="text-sm font-bold text-on-surface truncate group-hover:text-primary transition-colors">QUBIT_PROCESSOR</span>
+                    <span className="text-xs font-bold text-on-surface-variant whitespace-nowrap">OPTIMAL</span>
                   </div>
                   <div className="w-full bg-surface-container-lowest h-1.5 rounded-full overflow-hidden">
                     <div className="bg-primary h-full w-[64%]"></div>
                   </div>
                   <p className="text-[10px] text-on-surface-variant mt-2">Healthy rotation</p>
-                </div>
+                </Link>
               </div>
               <button className="w-full mt-8 py-3 text-xs font-bold text-on-tertiary-container bg-tertiary rounded-full hover:brightness-110 transition-all uppercase tracking-widest">
                 Automate Restock
@@ -192,7 +193,7 @@ export default function DashboardPage() {
             </motion.div>
 
             {/* Live Traffic Map Tile */}
-            <motion.div variants={item} className="col-span-12 lg:col-span-12 bg-surface-container-low rounded-lg p-8 border border-outline-variant/20 min-h-[400px] relative overflow-hidden mt-6">
+            <motion.div variants={item} className="col-span-12 lg:col-span-12 bg-surface-container-low rounded-[24px] p-8 border border-outline-variant/20 min-h-[400px] relative overflow-hidden mt-6 shadow-oled-primary">
               <div className="flex justify-between items-start mb-8 z-10 relative">
                 <div>
                   <h3 className="font-headline text-xl font-bold text-on-surface uppercase tracking-tight">Global Inbound Nodes</h3>

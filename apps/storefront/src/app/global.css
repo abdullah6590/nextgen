@@ -1,5 +1,45 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+
+@theme {
+  --color-background: #131315;
+  --color-surface: #131315;
+  --color-surface-dim: #131315;
+  --color-surface-container-lowest: #0e0e10;
+  --color-surface-container-low: #1c1b1d;
+  --color-surface-container: #201f22;
+  --color-surface-container-high: #2a2a2c;
+  --color-surface-container-highest: #353437;
+  --color-surface-bright: #39393b;
+  
+  --color-primary: #4cd7f6;
+  --color-primary-container: #06b6d4;
+  --color-on-primary: #003640;
+  
+  --color-secondary: #d0bcff;
+  --color-secondary-container: #571bc1;
+  --color-on-secondary: #3c0091;
+  
+  --color-tertiary: #eec200;
+  --color-tertiary-container: #c8a200;
+  --color-on-tertiary: #3c2f00;
+
+  --color-error: #ffb4ab;
+  --color-error-container: #93000a;
+  
+  --color-on-surface: #e5e1e4;
+  --color-on-surface-variant: #bcc9cd;
+  --color-outline: #869397;
+  --color-outline-variant: #3d494c;
+
+  --font-headline: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+
+  --border-radius-md: 1.5rem;
+  
+  --shadow-oled-primary: 0 10px 48px rgba(76, 215, 246, 0.08);
+  --shadow-oled-secondary: 0 10px 48px rgba(208, 188, 255, 0.08);
+  --shadow-glass: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
 
 @layer base {
   body {

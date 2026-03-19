@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import Link from 'next/link';
 import VisualSearchOverlay from '../components/VisualSearchOverlay';
 
 const container = {
@@ -94,24 +95,24 @@ export default function StorefrontHomePage() {
               <h2 className="font-headline text-xl font-bold uppercase tracking-tight">New Assets</h2>
             </div>
             <div className="space-y-4 my-6">
-              <div className="flex items-center gap-4 bg-surface-container-lowest p-3 rounded-lg border border-outline-variant/5">
-                <div className="w-10 h-10 bg-secondary/20 rounded-md flex items-center justify-center">
+              <Link href="/product/neural-mesh-v4-2" className="flex items-center gap-4 bg-surface-container-lowest p-3 rounded-lg border border-outline-variant/5 hover:border-secondary/50 transition-colors cursor-pointer group">
+                <div className="w-10 h-10 bg-secondary/20 rounded-md flex items-center justify-center group-hover:bg-secondary/30 transition-colors">
                   <span className="material-symbols-outlined text-secondary text-sm">model_training</span>
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-on-surface">Neural Mesh v4.2</p>
+                  <p className="text-xs font-bold text-on-surface group-hover:text-secondary transition-colors">Neural Mesh v4.2</p>
                   <p className="text-[10px] text-slate-500 uppercase">Vendor: Cypher_Core</p>
                 </div>
-              </div>
-              <div className="flex items-center gap-4 bg-surface-container-lowest p-3 rounded-lg border border-outline-variant/5">
-                <div className="w-10 h-10 bg-primary/20 rounded-md flex items-center justify-center">
+              </Link>
+              <Link href="/product/bio-synth-textures" className="flex items-center gap-4 bg-surface-container-lowest p-3 rounded-lg border border-outline-variant/5 hover:border-primary/50 transition-colors cursor-pointer group">
+                <div className="w-10 h-10 bg-primary/20 rounded-md flex items-center justify-center group-hover:bg-primary/30 transition-colors">
                   <span className="material-symbols-outlined text-primary text-sm">filter_vintage</span>
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-on-surface">Bio-Synth Textures</p>
+                  <p className="text-xs font-bold text-on-surface group-hover:text-primary transition-colors">Bio-Synth Textures</p>
                   <p className="text-[10px] text-slate-500 uppercase">Vendor: Gaia_Labs</p>
                 </div>
-              </div>
+              </Link>
             </div>
             <button className="w-full py-3 bg-surface-container-highest rounded-full text-xs font-bold uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-all">Explore All</button>
           </motion.div>
@@ -152,43 +153,47 @@ export default function StorefrontHomePage() {
 
           {/* Featured Product 1 */}
           <motion.div variants={item} className="col-span-12 md:col-span-6 lg:col-span-3 row-span-1 bg-surface-container-low rounded-lg overflow-hidden border border-outline-variant/10 hover:-translate-y-2 hover:scale-[1.01] hover:shadow-[0_20px_40px_rgba(0,0,0,0.4),0_0_20px_rgba(76,215,246,0.1)] transition-all duration-300 group">
-            <div className="h-48 relative">
-              <img alt="Neural Asset 1" className="w-full h-full object-cover" data-alt="Abstract iridescent fluid digital art" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0kL0OVc4DTI5hZ1_sYW3t4MxQrpudSwaD79qPf8w16b0gibEsdps4OaLyZEFW2eG5PjkjOjjAU8hKCvhFPo9lC77gQzEg0jOeKEFUuR3oUe7NASDiKZgRhcVU5q1TH2tgcbVU1kf_CayrCWEwEWxaXLOVpchGKMGhnC5kiiubSfvqi6GpMlHymLu9ufHq1FJVW5ewSBGsqoANc7DTaaLEx_eoyQCqDc1Kan0i87b9bc0lNfn6mrgBymgvaQzcRw62UqS_PgEjr5Zm" />
-              <div className="absolute top-4 right-4 bg-primary text-on-primary text-[10px] font-black px-2 py-1 rounded-sm shadow-lg">99.4% MATCH</div>
-            </div>
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-headline font-bold text-lg leading-none">Iridescent Mesh Kit</h3>
-                <span className="text-primary font-bold">2.4 ETH</span>
+            <Link href="/product/iridescent-mesh-kit" className="block w-full h-full cursor-pointer">
+              <div className="h-48 relative">
+                <img alt="Neural Asset 1" className="w-full h-full object-cover" data-alt="Abstract iridescent fluid digital art" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0kL0OVc4DTI5hZ1_sYW3t4MxQrpudSwaD79qPf8w16b0gibEsdps4OaLyZEFW2eG5PjkjOjjAU8hKCvhFPo9lC77gQzEg0jOeKEFUuR3oUe7NASDiKZgRhcVU5q1TH2tgcbVU1kf_CayrCWEwEWxaXLOVpchGKMGhnC5kiiubSfvqi6GpMlHymLu9ufHq1FJVW5ewSBGsqoANc7DTaaLEx_eoyQCqDc1Kan0i87b9bc0lNfn6mrgBymgvaQzcRw62UqS_PgEjr5Zm" />
+                <div className="absolute top-4 right-4 bg-primary text-on-primary text-[10px] font-black px-2 py-1 rounded-sm shadow-lg">99.4% MATCH</div>
               </div>
-              <p className="text-slate-500 text-xs uppercase tracking-widest mb-6">Procedural Materials</p>
-              <button className="w-full bg-gradient-to-r from-primary to-primary-container text-on-primary py-3 rounded-full text-xs font-bold uppercase tracking-widest group-hover:shadow-[0_0_15px_rgba(76,215,246,0.4)] transition-all">Acquire Asset</button>
-            </div>
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-headline font-bold text-lg leading-none group-hover:text-primary transition-colors">Iridescent Mesh Kit</h3>
+                  <span className="text-primary font-bold">2.4 ETH</span>
+                </div>
+                <p className="text-slate-500 text-xs uppercase tracking-widest mb-6">Procedural Materials</p>
+                <div className="w-full bg-gradient-to-r from-primary to-primary-container text-on-primary py-3 rounded-full text-xs font-bold uppercase tracking-widest group-hover:shadow-[0_0_15px_rgba(76,215,246,0.4)] transition-all flex justify-center items-center">Acquire Asset</div>
+              </div>
+            </Link>
           </motion.div>
 
           {/* Featured Product 2 */}
           <motion.div variants={item} className="col-span-12 md:col-span-6 lg:col-span-3 row-span-1 bg-surface-container-low rounded-lg overflow-hidden border border-outline-variant/10 hover:-translate-y-2 hover:scale-[1.01] hover:shadow-[0_20px_40px_rgba(0,0,0,0.4),0_0_20px_rgba(76,215,246,0.1)] transition-all duration-300 group">
-            <div className="h-48 relative">
-              <img alt="Neural Asset 2" className="w-full h-full object-cover" data-alt="Dark futuristic architecture interior with neon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnUssltF04v92j3XMPmRKSqs8u_bDolyYBBWuEXCfTkbIjHbSZKO8Gn7b3Of6GJVFTyo6sdIHOW_Y9FFLg5AENvJP3LHFSQ-iYF4l_JHDG9ERYmQEauipMqEjTBiIaklARI1lTRkwmfBp-FgJ6X6ai4QTQ2Xv09hApC6T9tujWSfvLtXPBc-ewuLdib9n8zI8FcTRzs_mxQ3IItWzbP2HvQALEbqwO095-ii94G-b1ExTlKQeyCuyRiQyMmIqUOjydrjpLqpW1nZLM" />
-              <div className="absolute top-4 right-4 bg-primary text-on-primary text-[10px] font-black px-2 py-1 rounded-sm shadow-lg">98.1% MATCH</div>
-            </div>
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-headline font-bold text-lg leading-none">Neo-Tokyo Enviro</h3>
-                <span className="text-primary font-bold">4.8 ETH</span>
+            <Link href="/product/neo-tokyo-enviro" className="block w-full h-full cursor-pointer">
+              <div className="h-48 relative">
+                <img alt="Neural Asset 2" className="w-full h-full object-cover" data-alt="Dark futuristic architecture interior with neon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnUssltF04v92j3XMPmRKSqs8u_bDolyYBBWuEXCfTkbIjHbSZKO8Gn7b3Of6GJVFTyo6sdIHOW_Y9FFLg5AENvJP3LHFSQ-iYF4l_JHDG9ERYmQEauipMqEjTBiIaklARI1lTRkwmfBp-FgJ6X6ai4QTQ2Xv09hApC6T9tujWSfvLtXPBc-ewuLdib9n8zI8FcTRzs_mxQ3IItWzbP2HvQALEbqwO095-ii94G-b1ExTlKQeyCuyRiQyMmIqUOjydrjpLqpW1nZLM" />
+                <div className="absolute top-4 right-4 bg-primary text-on-primary text-[10px] font-black px-2 py-1 rounded-sm shadow-lg">98.1% MATCH</div>
               </div>
-              <p className="text-slate-500 text-xs uppercase tracking-widest mb-6">Real-time Scene Core</p>
-              <div className="flex flex-col gap-3">
-                <button className="w-full py-3 rounded-full bg-[#06b6d4]/10 border border-[#06b6d4]/30 text-[#06b6d4] font-bold text-[10px] uppercase tracking-widest hover:bg-[#06b6d4]/20 transition-all active:scale-95 shadow-[0_0_15px_rgba(6,182,212,0.4)] backdrop-blur-sm flex items-center justify-center gap-2">
-                  <span className="material-symbols-outlined text-sm">add_shopping_cart</span>
-                  ADD TO CART
-                </button>
-                <button className="w-full py-3 rounded-full bg-gradient-to-r from-[#8b5cf6] to-[#6d28d9] text-white font-bold text-[10px] uppercase tracking-widest hover:brightness-110 transition-all active:scale-95 shadow-[0_0_25px_rgba(139,92,246,0.5)] flex items-center justify-center gap-2">
-                  <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: '"FILL" 1' }}>bolt</span>
-                  QUICK PURCHASE
-                </button>
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-headline font-bold text-lg leading-none group-hover:text-primary transition-colors">Neo-Tokyo Enviro</h3>
+                  <span className="text-primary font-bold">4.8 ETH</span>
+                </div>
+                <p className="text-slate-500 text-xs uppercase tracking-widest mb-6">Real-time Scene Core</p>
+                <div className="flex flex-col gap-3">
+                  <div className="w-full py-3 rounded-full bg-[#06b6d4]/10 border border-[#06b6d4]/30 text-[#06b6d4] font-bold text-[10px] uppercase tracking-widest hover:bg-[#06b6d4]/20 transition-all active:scale-95 shadow-[0_0_15px_rgba(6,182,212,0.4)] backdrop-blur-sm flex items-center justify-center gap-2">
+                    <span className="material-symbols-outlined text-sm">add_shopping_cart</span>
+                    ADD TO CART
+                  </div>
+                  <div className="w-full py-3 rounded-full bg-gradient-to-r from-[#8b5cf6] to-[#6d28d9] text-white font-bold text-[10px] uppercase tracking-widest hover:brightness-110 transition-all active:scale-95 shadow-[0_0_25px_rgba(139,92,246,0.5)] flex items-center justify-center gap-2">
+                    <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: '"FILL" 1' }}>bolt</span>
+                    QUICK PURCHASE
+                  </div>
+                </div>
               </div>
-            </div>
+            </Link>
           </motion.div>
         </motion.div>
       </main>

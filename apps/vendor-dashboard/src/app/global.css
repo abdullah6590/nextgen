@@ -1,23 +1,53 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-background: #09090b;
-  --color-neon-cyan: #00f0ff;
-  --color-neon-blue: #3b82f6;
-  --color-neon-purple: #8a2be2;
-  --color-text-main: #ffffff;
-  --color-text-sub: #a1a1aa;
+  --color-background: #131315;
+  --color-surface: #131315;
+  --color-surface-dim: #131315;
+  --color-surface-container-lowest: #0e0e10;
+  --color-surface-container-low: #1c1b1d;
+  --color-surface-container: #201f22;
+  --color-surface-container-high: #2a2a2c;
+  --color-surface-container-highest: #353437;
+  --color-surface-bright: #39393b;
+  
+  --color-primary: #4cd7f6;
+  --color-primary-container: #06b6d4;
+  --color-on-primary: #003640;
+  
+  --color-secondary: #d0bcff;
+  --color-secondary-container: #571bc1;
+  --color-on-secondary: #3c0091;
+  
+  --color-tertiary: #eec200;
+  --color-tertiary-container: #c8a200;
+  --color-on-tertiary: #3c2f00;
 
-  --border-radius-3xl: 1.5rem;
-  --border-radius-4xl: 2rem;
+  --color-error: #ffb4ab;
+  --color-error-container: #93000a;
+  
+  --color-on-surface: #e5e1e4;
+  --color-on-surface-variant: #bcc9cd;
+  --color-outline: #869397;
+  --color-outline-variant: #3d494c;
 
-  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --shadow-neon-cyan: 0 0 15px rgba(0, 240, 255, 0.4);
+  --font-headline: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+
+  --border-radius-md: 1.5rem;
+  
+  --shadow-oled-primary: 0 10px 48px rgba(76, 215, 246, 0.08);
+  --shadow-oled-secondary: 0 10px 48px rgba(208, 188, 255, 0.08);
+  --shadow-glass: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
 @layer base {
   body {
     @apply bg-background text-white antialiased overflow-x-hidden;
+  }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
 }
 
@@ -33,7 +63,7 @@
   }
 
   .neon-text-cyan {
-    @apply text-neon-cyan drop-shadow-[0_0_8px_rgba(0,240,255,0.5)];
+    @apply text-primary drop-shadow-[0_0_8px_rgba(76,215,246,0.5)];
   }
 
   .bento-grid {
