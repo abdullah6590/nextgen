@@ -65,6 +65,7 @@ jobs:
       DATABASE_URL: postgresql://user:password@localhost:5432/eshop?schema=public
       MONGODB_URI: mongodb://localhost:27017/eshop_products
       JWT_SECRET: ci-test-secret
+      NX_CLOUD_ACCESS_TOKEN: ${{ github.ref == 'refs/heads/master' && 'YjljMTA2ZjYtZTc4OS00NDhmLTlkMmEtMDg4NTQzODEwMzE1fHJlYWQtd3JpdGU=' || 'NzU5MjVkOTktMWNlNS00YmMxLTg3N2ItNjRkNzcyYTcyMGM1fHJlYWQ=' }}
 
     steps:
       - name: Checkout code
@@ -80,7 +81,7 @@ jobs:
           cache-dependency-path: 'package-lock.json'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Verify Nx Binary
         run: |
@@ -115,3 +116,7 @@ jobs:
       - name: CI Diagnostics
         if: always()
         run: npx nx report
+
+      - name: Nx Cloud Self-Healing CI
+        if: always()
+        run: npx nx fix-ci
