@@ -70,8 +70,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+
+      - name: Verify Checkout
+        run: |
+          echo "Working dir: $(pwd)"
+          echo "Files found: $(ls | wc -l)"
+          ls -la
+          test -f nx.json || (echo "ERROR: nx.json not found - checkout may have failed!" && exit 1)
+          echo "Checkout OK - nx.json found"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
