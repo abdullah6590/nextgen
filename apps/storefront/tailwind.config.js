@@ -68,21 +68,23 @@ module.exports = {
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'hero-glow': 'radial-gradient(circle at 50% -20%, rgba(138, 43, 226, 0.4), rgba(4, 7, 20, 1) 50%)',
         'glass-gradient': 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)',
+        'gradient-primary': 'linear-gradient(135deg, #4cd7f6 0%, #06b6d4 100%)',
       },
       fontFamily: {
+        display: ["Space Grotesk", "sans-serif"],
         headline: ["Space Grotesk", "sans-serif"],
         body: ["Inter", "sans-serif"],
         label: ["Inter", "sans-serif"],
         sans: ['var(--font-inter)', 'sans-serif'],
       },
+      borderRadius: {
+        'md': '1.5rem',
+      },
       boxShadow: {
-        'neon-blue': '0 0 10px rgba(0, 240, 255, 0.5), 0 0 20px rgba(0, 240, 255, 0.3)',
-        'neon-purple': '0 0 10px rgba(138, 43, 226, 0.5), 0 0 20px rgba(138, 43, 226, 0.3)',
+        'oled-primary': '0 10px 48px rgba(76, 215, 246, 0.08)',
+        'oled-secondary': '0 10px 48px rgba(208, 188, 255, 0.08)',
         'glass': '0 4px 30px rgba(0, 0, 0, 0.1)',
-        'btn-cyan': '0 0 15px rgba(6, 182, 212, 0.4)',
-        'btn-violet': '0 0 25px rgba(139, 92, 246, 0.5)',
       },
       animation: {
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',

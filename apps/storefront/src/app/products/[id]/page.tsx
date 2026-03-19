@@ -1,194 +1,192 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import api from '../../../lib/api';
-import { useCart } from '../../../contexts/CartContext';
-import { Button } from '../../../components/Button';
-import { Card } from '../../../components/Card';
+import { motion } from 'framer-motion';
 
-interface Product {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  stock: number;
-  vendorId: string;
-  images: string[];
-  tags: string[];
-}
-
-export default function ProductDetailsPage() {
-  const { id } = useParams();
-  const router = useRouter();
-  const { addToCart } = useCart();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [quantity, setQuantity] = useState(1);
-  const [activeImage, setActiveImage] = useState(0);
-
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        // Send userId if available for Kafka view tracking
-        const storedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-        let userId = '';
-        if (storedToken) {
-          try {
-             const payload = JSON.parse(atob(storedToken.split('.')[1]));
-             userId = payload.userId;
-          } catch(e) {}
-        }
-
-        const { data } = await api.get(`/products/${id}${userId ? `?userId=${userId}` : ''}`);
-        setProduct(data);
-      } catch (err) {
-        setError('Failed to retrieve hardware specifications.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (id) fetchProduct();
-  }, [id]);
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-[calc(100vh-80px)]">
-         <div className="w-16 h-16 border-4 border-neon-purple border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (error || !product) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-80px)] px-6">
-        <h1 className="text-4xl font-bold text-neon-pink uppercase tracking-widest mb-4">404 // Not Found</h1>
-        <p className="text-text-sub font-mono mb-8 opacity-80">{error || 'The requested asset does not exist in our database.'}</p>
-        <Button onClick={() => router.push('/products')} variant="secondary">Return to Catalog</Button>
-      </div>
-    );
-  }
-
+export default function ProductDeepDivePage({ params }: { params: { id: string } }) {
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12 lg:py-20">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Visualizer */}
-        <div className="space-y-4">
-          <Card className="aspect-square relative flex items-center justify-center border border-[rgba(255,255,255,0.05)] bg-surface-hover/50 p-2">
-            {product.images?.[activeImage] ? (
-              <img src={product.images[activeImage]} className="w-full h-full object-cover rounded shadow-lg" alt={product.name} />
-            ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-neon-blue opacity-30 font-mono">
-                 <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                 <span className="mt-4 text-sm tracking-widest uppercase">Visual Data Missing</span>
-              </div>
-            )}
-            
-            {/* Holographic overlay */}
-            <div className="absolute inset-0 bg-gradient-to-b from-neon-purple/20 to-transparent mix-blend-screen opacity-10 pointer-events-none"></div>
-          </Card>
-          
-          {product.images && product.images.length > 1 && (
-            <div className="grid grid-cols-4 gap-4">
-               {product.images.map((img, idx) => (
-                 <div 
-                   key={idx} 
-                   onClick={() => setActiveImage(idx)}
-                   className={`aspect-square rounded border cursor-pointer hover:border-neon-blue transition-colors ${activeImage === idx ? 'border-neon-blue' : 'border-[rgba(255,255,255,0.1)]'}`}
-                 >
-                    <img src={img} className="w-full h-full object-cover rounded opacity-80 hover:opacity-100" />
-                 </div>
-               ))}
+    <div className="bg-background text-on-surface font-body selection:bg-secondary/30 min-h-screen">
+      {/* Top Navigation Anchor */}
+      <nav className="fixed top-0 w-full z-50 bg-[#131315]/15 backdrop-blur-xl border-b border-cyan-500/10 shadow-[0_8px_32px_0_rgba(76,215,246,0.08)]">
+        <div className="flex justify-between items-center w-full px-8 py-4 max-w-[1920px] mx-auto">
+          <div className="text-2xl font-black tracking-tighter text-cyan-400 font-headline uppercase">NEURAL_ARC</div>
+          <div className="hidden md:flex items-center gap-8 font-headline tracking-tight uppercase text-sm">
+            <a className="text-slate-400 hover:text-cyan-200 transition-colors" href="/">Storefront</a>
+            <a className="text-cyan-400 border-b-2 border-cyan-400 pb-1" href="/products">Catalog</a>
+            <a className="text-slate-400 hover:text-cyan-200 transition-colors" href="/checkout">Checkout</a>
+          </div>
+          <div className="flex items-center gap-6">
+            <button className="text-slate-400 hover:text-cyan-400 transition-all duration-300 scale-95 active:scale-90">
+              <span className="material-symbols-outlined">shopping_cart</span>
+            </button>
+            <button className="text-slate-400 hover:text-cyan-400 transition-all duration-300 scale-95 active:scale-90">
+              <span className="material-symbols-outlined">smart_toy</span>
+            </button>
+            <div className="w-10 h-10 rounded-full border border-cyan-500/20 overflow-hidden bg-surface-container-high">
+              <img alt="User Neural Profile" className="w-full h-full object-cover" data-alt="Cyberpunk style neon portrait of a user profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBy1PiqlAxEKDb59OF_RW385I9g3Ebmj7gFIoZJIfaeh7y735x5UTQmPwpEUK5aLODyDzLNAHL--M4Z37T2T7QCTrrigc_eKvICV_ArCt63fwTjCTwgJ4gANtZhN5nCaB3Z7lUGyDu3uRDXJtCkPxK2S5ceVZBj0vRiZtNMC_E7kCFdeQ1PIbAgugdQI1Ww5woCM0RfTTIUqUa9YMYTN1qP9LaU6GWkvYSq-QPtvwmLHxnJpBcEpvwSS39vdU6m0ssr1qxP_29Xexdl" />
             </div>
-          )}
+          </div>
         </div>
+      </nav>
 
-        {/* Specs */}
-        <div className="flex flex-col">
-          <div className="mb-2 flex items-center gap-4">
-             <span className="text-neon-purple text-xs font-mono font-bold tracking-[0.2em] uppercase px-3 py-1 bg-neon-purple/10 border border-neon-purple/30 rounded-full">
-               {product.category}
-             </span>
-             {product.stock <= 0 && (
-               <span className="text-red-500 text-xs font-mono font-bold tracking-[0.2em] uppercase px-3 py-1 bg-red-500/10 border border-red-500/30 rounded-full flex items-center gap-2">
-                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> Offline
-               </span>
-             )}
-          </div>
-          
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 leading-tight">
-            {product.name}
-          </h1>
-          
-          <div className="mb-8 p-4 bg-surface rounded-xl border border-[rgba(255,255,255,0.05)] border-l-2 border-l-neon-blue">
-             <div className="text-sm font-bold tracking-widest text-text-sub uppercase mb-2">Technical Description</div>
-             <p className="text-text-main leading-relaxed opacity-90">{product.description || 'No description available for this unit.'}</p>
-          </div>
-          
-          <div className="flex items-end gap-6 mb-8 pb-8 border-b border-[rgba(255,255,255,0.05)]">
-            <div>
-              <div className="text-sm font-bold tracking-widest text-text-sub uppercase mb-1">Exchange Rate</div>
-              <div className="text-4xl font-mono text-white tracking-widest">${product.price.toFixed(2)}</div>
+      {/* Main Content Canvas */}
+      <main className="pt-24 pb-12 px-8 min-h-screen grid grid-cols-12 gap-8 max-w-[1920px] mx-auto relative overflow-hidden">
+        
+        {/* Left Section: 3D Asset Preview */}
+        <section className="col-span-12 lg:col-span-6 flex flex-col gap-6">
+          <div className="relative w-full aspect-square lg:aspect-auto lg:h-[819px] bg-surface-container-lowest rounded-lg overflow-hidden border border-outline-variant/10 group">
+            <img alt="Aetheris AI Asset" className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-[2000ms]" data-alt="High resolution 3D abstract digital sculpture with flowing particles" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnHt7L0-cjAzxH9tNsDGNj9wRDtAS1lFmZd-5er56LZ4z1gAFRaI56PI2FitFkk3wuwLg75QXFCfqdc2TAZY6kk1oMUO0GtyXf37kSJFViV0FVNMOBp-13DjQ7f2YRW5RPd-5fAjw8V5hDC0cFS9WnCQ-pRD1d23LCxFb-yE4s1w2ygAm9yC2SzijDcX4e6Zkml8T-l8JnMyBIl7PefLRrADu8Li7Otyt3u6tFP67uwZljn2VH3F_wVo7-0BADLXzEL2PFdjfMHbkG" />
+            
+            {/* Asset Overlay Info */}
+            <div className="absolute bottom-8 left-8 flex flex-col gap-2">
+              <div className="inline-flex items-center gap-2 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/5">
+                <span className="w-2 h-2 rounded-full bg-primary animate-[pulse_2s_infinite]"></span>
+                <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary">Live Neural Render</span>
+              </div>
+              <h1 className="text-6xl font-black font-headline tracking-tighter text-white uppercase leading-none">Aetheris AI</h1>
+              <p className="text-on-surface-variant font-medium tracking-wide">Series v.4 // Genesis Core Architecture</p>
             </div>
             
-            {product.stock > 0 && (
-              <div className="flex flex-col">
-                <div className="text-sm font-bold tracking-widest text-text-sub uppercase mb-1">Quantity</div>
-                <div className="flex items-center gap-4 bg-surface rounded px-4 py-2 border border-[rgba(255,255,255,0.1)]">
-                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-neon-blue hover:text-white pb-1">-</button>
-                  <span className="font-mono w-6 text-center">{quantity}</span>
-                  <button onClick={() => setQuantity(Math.min(product.stock, quantity + 1))} className="text-neon-blue hover:text-white pb-1">+</button>
+            {/* Floating Interaction Ring */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-64 h-64 border border-primary/20 rounded-full animate-[spin_20s_linear_infinite]"></div>
+              <div className="absolute w-80 h-80 border border-secondary/10 rounded-full animate-[spin_30s_linear_infinite_reverse]"></div>
+            </div>
+          </div>
+        </section>
+
+        {/* Middle Section: Product Details & Metrics */}
+        <section className="col-span-12 lg:col-span-3 flex flex-col gap-6">
+          
+          {/* Kafka Synced Inventory Card */}
+          <div className="glass-panel backdrop-blur-[20px] bg-[rgba(19,19,21,0.15)] p-6 rounded-lg border border-outline-variant/20 shadow-[0_0_15px_rgba(208,188,255,0.1)]">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Stock Status</p>
+                <h3 className="text-xl font-headline font-bold text-white uppercase">Real-Time Sync</h3>
+              </div>
+              <span className="material-symbols-outlined text-secondary">database</span>
+            </div>
+            <div className="flex items-end gap-2 mb-4">
+              <span className="text-4xl font-headline font-bold text-primary">14</span>
+              <span className="text-on-surface-variant text-sm pb-1">Units available in local node</span>
+            </div>
+            <div className="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-primary to-secondary w-[14%] rounded-full shadow-[0_0_10px_#4cd7f6]"></div>
+            </div>
+            <p className="mt-3 text-[10px] text-on-surface-variant italic">Kafka cluster: us-east-1a-prod // Latency: 4ms</p>
+          </div>
+
+          {/* Deep Dive Specs Bento */}
+          <div className="flex flex-col gap-4">
+            <div className="bg-surface-container-low p-6 rounded-lg border border-outline-variant/10 hover:border-primary/40 transition-all cursor-default group">
+              <div className="flex items-center gap-4 mb-3">
+                <div className="p-2 rounded-md bg-primary/10 text-primary">
+                  <span className="material-symbols-outlined">memory</span>
                 </div>
+                <span className="font-headline font-bold tracking-tight text-lg uppercase">Core Processing</span>
               </div>
-            )}
+              <p className="text-sm text-on-surface-variant leading-relaxed">Liquid-cooled quantum lattice processing unit with 4.2 Exaflops of native AI throughput.</p>
+            </div>
+            <div className="bg-surface-container-low p-6 rounded-lg border border-outline-variant/10 hover:border-secondary/40 transition-all cursor-default group">
+              <div className="flex items-center gap-4 mb-3">
+                <div className="p-2 rounded-md bg-secondary/10 text-secondary">
+                  <span className="material-symbols-outlined">shield_moon</span>
+                </div>
+                <span className="font-headline font-bold tracking-tight text-lg uppercase">Neural Shield</span>
+              </div>
+              <p className="text-sm text-on-surface-variant leading-relaxed">Integrated biometric encryption using decentralized blockchain verification layers.</p>
+            </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 mt-auto">
-            <Button 
-                className="w-full sm:w-2/3 py-4 text-sm" 
-                variant="primary"
-                disabled={product.stock <= 0}
-                onClick={() => addToCart({
-                  productId: product._id,
-                  name: product.name,
-                  price: product.price,
-                  quantity,
-                  image: product.images?.[0]
-                })}
-            >
-               {product.stock > 0 ? 'Initialize Purchase Subroutine' : 'Unit Unavailable'}
-            </Button>
-            <Button className="w-full sm:w-1/3 py-4 text-sm" variant="glass" onClick={() => router.push('/products')}>
-               Abort // Back
-            </Button>
+          {/* Interactive Actions */}
+          <div className="mt-auto flex flex-col gap-4">
+            {/* High-End Commerce Actions */}
+            <button className="w-full py-5 rounded-full bg-primary text-on-primary font-headline font-black uppercase tracking-[0.2em] transform hover:scale-[1.05] active:scale-95 transition-all duration-300 animate-[pulse-cyan_3s_infinite_ease-in-out] flex items-center justify-center gap-3 shadow-[0_0_15px_rgba(76,215,246,0.4),0_0_30px_rgba(76,215,246,0.2)]">
+              <span className="material-symbols-outlined">shopping_cart</span>
+              ADD TO CART
+            </button>
+            <button className="w-full py-5 rounded-full bg-secondary text-on-secondary font-headline font-black uppercase tracking-[0.2em] transform hover:scale-[1.05] active:scale-95 transition-all duration-300 animate-[pulse-violet_3s_infinite_ease-in-out] flex items-center justify-center gap-3 shadow-[0_0_15px_rgba(208,188,255,0.4),0_0_30px_rgba(208,188,255,0.2)]">
+              <span className="material-symbols-outlined">payments</span>
+              PURCHASE NOW
+            </button>
+            <button className="w-full py-3 mt-2 rounded-full backdrop-blur-[20px] bg-[rgba(19,19,21,0.15)] border border-primary/20 text-primary/60 font-headline font-bold uppercase tracking-[0.1em] hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2 text-xs">
+              <span className="material-symbols-outlined text-sm">analytics</span>
+              AI Analysis Report
+            </button>
           </div>
+        </section>
+
+        {/* Right Section: AI Stylist Sidebar */}
+        <section className="col-span-12 lg:col-span-3 flex flex-col bg-surface-container-lowest/50 backdrop-blur-md rounded-lg border border-outline-variant/10 overflow-hidden shadow-[0_0_15px_rgba(208,188,255,0.1)] h-[819px] sticky top-24">
           
-          {/* Decorative tech specs */}
-          <div className="mt-12 grid grid-cols-2 gap-4 gap-y-6 pt-8 border-t border-[rgba(255,255,255,0.05)]">
-             <div>
-                <div className="text-[10px] font-mono text-text-sub tracking-widest uppercase">Identifier</div>
-                <div className="text-xs font-mono text-neon-blue mt-1 break-all">{product._id}</div>
-             </div>
-             <div>
-                <div className="text-[10px] font-mono text-text-sub tracking-widest uppercase">Vendor Link</div>
-                <div className="text-xs font-mono text-neon-purple mt-1 break-all">{product.vendorId}</div>
-             </div>
-             {product.tags?.length > 0 && (
-               <div className="col-span-2">
-                  <div className="text-[10px] font-mono text-text-sub tracking-widest uppercase mb-2">Classifications</div>
-                  <div className="flex flex-wrap gap-2">
-                    {product.tags.map(tag => (
-                      <span key={tag} className="text-xs font-mono text-neon-blue px-2 py-0.5 border border-neon-blue/30 rounded backdrop-blur bg-neon-blue/5 uppercase">#{tag}</span>
-                    ))}
-                  </div>
-               </div>
-             )}
+          {/* Sidebar Header */}
+          <div className="p-6 border-b border-outline-variant/10 flex items-center gap-4">
+            <div className="relative">
+              <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-secondary">
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: '"FILL" 1' }}>psychology</span>
+              </div>
+              <div className="absolute bottom-0 right-0 w-3 h-3 bg-tertiary rounded-full border-2 border-surface"></div>
+            </div>
+            <div>
+              <h4 className="font-headline font-bold text-white uppercase tracking-tight">AI Stylist</h4>
+              <p className="text-[10px] text-tertiary font-bold tracking-widest uppercase">Consultant Online</p>
+            </div>
           </div>
-          
+
+          {/* Chat History */}
+          <div className="flex-1 p-6 overflow-y-auto space-y-6">
+            
+            {/* AI Message */}
+            <div className="flex flex-col gap-2 max-w-[85%]">
+              <div className="bg-secondary-container/20 p-4 rounded-lg rounded-tl-none border border-secondary/20">
+                <p className="text-sm text-on-secondary-container leading-relaxed">Greetings, Architect. The Aetheris AI module perfectly complements your existing <span className="text-secondary font-bold">Obsidian Core</span> workflow. Shall I simulate the integration?</p>
+              </div>
+              <span className="text-[10px] text-slate-600 uppercase">09:41 AM</span>
+            </div>
+
+            {/* User Message */}
+            <div className="flex flex-col gap-2 max-w-[85%] ml-auto items-end">
+              <div className="bg-surface-container-highest p-4 rounded-lg rounded-tr-none border border-outline-variant/20">
+                <p className="text-sm text-white leading-relaxed">What&apos;s the latency impact on visual search tasks?</p>
+              </div>
+              <span className="text-[10px] text-slate-600 uppercase">09:42 AM</span>
+            </div>
+
+            {/* AI Message */}
+            <div className="flex flex-col gap-2 max-w-[85%]">
+              <div className="bg-secondary-container/20 p-4 rounded-lg rounded-tl-none border border-secondary/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="material-symbols-outlined text-sm">bolt</span>
+                  <span className="text-[10px] uppercase font-bold text-secondary">AI Calculation Complete</span>
+                </div>
+                <p className="text-sm text-on-secondary-container leading-relaxed">Predicted latency reduction is <span className="text-primary font-bold">22.4%</span> due to the Genesis Core&apos;s dedicated vector sub-processor.</p>
+              </div>
+              <span className="text-[10px] text-slate-600 uppercase">09:42 AM</span>
+            </div>
+          </div>
+
+          {/* Chat Input */}
+          <div className="p-6 bg-surface-container-low border-t border-outline-variant/10">
+            <div className="relative">
+              <input className="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-full py-3 px-6 text-sm text-white focus:outline-none focus:border-secondary transition-all placeholder:text-slate-600" placeholder="Consult the AI Architect..." type="text" />
+              <button className="absolute right-2 top-1.5 w-9 h-9 bg-secondary rounded-full text-on-secondary flex items-center justify-center hover:scale-110 transition-transform">
+                <span className="material-symbols-outlined text-xl">send</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer Component */}
+      <footer className="w-full py-12 px-8 mt-auto bg-[#0e0e10] border-t border-cyan-500/10 flex flex-col items-center gap-6">
+        <div className="flex gap-12 text-slate-600 font-body text-[10px] tracking-widest uppercase">
+          <a className="hover:text-violet-400 transition-colors" href="#">Privacy Protocol</a>
+          <a className="hover:text-violet-400 transition-colors" href="#">Terms of Service</a>
+          <a className="hover:text-violet-400 transition-colors" href="#">API Docs</a>
+          <a className="hover:text-violet-400 transition-colors" href="#">Neural Network Status</a>
         </div>
-      </div>
+        <p className="text-slate-600 font-body text-[10px] tracking-widest uppercase">© 2024 NEURAL ARCHITECT. ALL ASSETS RENDERED IN 8K.</p>
+      </footer>
     </div>
   );
 }

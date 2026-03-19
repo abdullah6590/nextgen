@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { motion, HTMLMotionProps } from 'framer-motion';
-import { cn } from '../../lib/utils'; // I will create a simple utils or just use basic template literals, wait I'll make a simple utility or just inline. Let's make it inline if `cn` doesn't exist, wait, standard is to use `clsx` and `tailwind-merge` but I can just use template literals.
+
+const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(' ');
 
 interface BentoCardProps extends HTMLMotionProps<'div'> {
   className?: string;

@@ -1,59 +1,60 @@
-@import 'tailwindcss';
-
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-}
-
-@theme {
-  --color-background: #040714;
-  --color-surface: #0d1326;
-  --color-surface-hover: #161e38;
-  --color-neon-blue: #00f0ff;
-  --color-neon-purple: #8a2be2;
-  --color-neon-pink: #ff007f;
-  --color-text-main: #ffffff;
-  --color-text-sub: #94a3b8;
-
-  --font-sans: var(--font-inter), sans-serif;
-
-  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  --animate-float: float 6s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
 
 @layer base {
   body {
-    @apply bg-background text-text-main min-h-screen relative overflow-x-hidden;
+    background-color: #131315;
+    color: #e5e1e4;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
   }
 
   /* Webkit custom scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
+    width: 4px;
   }
   ::-webkit-scrollbar-track {
-    @apply bg-background;
+    background-color: #131315;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .bg-surface-dim {
+    background-color: #131315;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-surface-hover rounded-full;
+    background-color: #3d494c; /* bg-surface-container-highest */
+    border-radius: 9999px; /* rounded-full */
   }
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-neon-purple;
+    background-color: #4cd7f6; /* bg-primary */
+  }
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
   }
 }
 
 @layer components {
   /* Glassmorphism Panel Sync */
   .glass-panel {
-    background: rgba(19, 19, 21, 0.15);
+    background: rgba(19, 19, 21, 0.15); /* surface color */
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
   }
@@ -62,64 +63,31 @@
     display: grid;
     grid-template-columns: repeat(12, 1fr);
     grid-auto-rows: minmax(160px, auto);
-    gap: 1.5rem;
+    gap: 2rem;
   }
 
-  .cyber-glow {
-    box-shadow: 0 0 20px rgba(76, 215, 246, 0.15);
+  .hover-tilt {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease;
   }
 
-  .hover-lift {
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  .hover-tilt:hover {
+    transform: translateY(-4px) scale(1.01);
   }
 
-  .hover-lift:hover {
-    transform: translateY(-8px) scale(1.01);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(76, 215, 246, 0.1);
-  }
-
-  .btn-glow-cyan {
-    box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
-    animation: pulse-cyan 2s infinite ease-in-out;
+  .ghost-border {
+    border: 1px solid rgba(61, 73, 76, 0.2); /* outline_variant at 20% */
   }
   
-  .btn-glow-violet {
-    box-shadow: 0 0 25px rgba(139, 92, 246, 0.5);
-    animation: pulse-violet 2s infinite ease-in-out;
+  .ghost-border-hover:hover {
+    border-color: rgba(61, 73, 76, 0.4);
+  }
+
+  /* Floating modal light catch */
+  .light-catch-top {
+    border-top: 1px solid rgba(61, 73, 76, 0.5);
   }
   
-  @keyframes pulse-cyan {
-    0%, 100% { box-shadow: 0 0 10px rgba(6, 182, 212, 0.3); }
-    50% { box-shadow: 0 0 20px rgba(6, 182, 212, 0.6); }
-  }
-  
-  @keyframes pulse-violet {
-    0%, 100% { box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); }
-    50% { box-shadow: 0 0 35px rgba(139, 92, 246, 0.8); }
-  }
-
-  /* Futuristic Buttons */
-  .btn-neon-primary {
-    @apply relative overflow-hidden bg-transparent text-neon-blue border border-neon-blue rounded px-6 py-2 uppercase tracking-widest font-bold transition-all duration-300;
-    &:hover {
-      @apply bg-neon-blue text-background;
-      box-shadow:
-        0 0 10px rgba(0, 240, 255, 0.5),
-        0 0 20px rgba(0, 240, 255, 0.3);
-    }
-  }
-
-  .btn-neon-secondary {
-    @apply relative overflow-hidden bg-transparent text-neon-purple border border-neon-purple rounded px-6 py-2 uppercase tracking-widest font-bold transition-all duration-300;
-    &:hover {
-      @apply bg-neon-purple text-background;
-      box-shadow:
-        0 0 10px rgba(138, 43, 226, 0.5),
-        0 0 20px rgba(138, 43, 226, 0.3);
-    }
-  }
-
-  .input-futuristic {
-    @apply w-full bg-surface border border-[rgba(255,255,255,0.1)] rounded px-4 py-3 text-text-main focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition-all duration-300 placeholder-text-sub;
+  .glow-left-primary {
+    box-shadow: -1px 0 5px rgba(76, 215, 246, 0.5);
   }
 }
