@@ -98,8 +98,8 @@ jobs:
 
       - name: Run Prisma Migrations
         run: |
-          npx prisma migrate deploy --schema=apps/auth-service/prisma/schema.prisma
-          npx prisma migrate deploy --schema=apps/order-service/prisma/schema.prisma
+          cd apps/auth-service && npx prisma migrate deploy && cd $GITHUB_WORKSPACE
+          cd apps/order-service && npx prisma migrate deploy && cd $GITHUB_WORKSPACE
 
       - name: Build, Typecheck, Lint & Unit Tests
         run: npx nx@22.6.0 run-many -t lint test build typecheck --exclude='*-e2e'
