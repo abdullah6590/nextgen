@@ -110,8 +110,20 @@ jobs:
 
       - name: CI Diagnostics
         if: always()
-        run: npx nx@22.6.0 report
+        continue-on-error: true
+        run: |
+          echo "=== Working Directory ==="
+          pwd
+          echo "=== Root Files ==="
+          ls -la
+          echo "=== nx.json ==="
+          cat nx.json 2>/dev/null || echo "nx.json NOT FOUND"
+          echo "=== node_modules/nx exists ==="
+          test -d node_modules/nx && echo "YES" || echo "NO - npm ci may have failed"
+          echo "=== Running nx report ==="
+          npx nx@22.6.0 report
 
       - name: Nx Cloud Self-Healing CI
         if: always()
+        continue-on-error: true
         run: npx nx@22.6.0 fix-ci
