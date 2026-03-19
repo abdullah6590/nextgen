@@ -81,18 +81,13 @@ jobs:
           cache-dependency-path: 'package-lock.json'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Verify Nx Binary
-        run: |
-          if [ -f "./node_modules/.bin/nx" ]; then
-            ./node_modules/.bin/nx --version
-          else
-            npx nx --version
-          fi
+        run: npx nx@22.6.0 --version
 
       - name: Generate Prisma Clients
-        run: ./node_modules/.bin/nx run-many -t generate-client
+        run: npx nx@22.6.0 run-many -t generate-client
 
       - name: Run Prisma Migrations
         run: |
@@ -100,23 +95,23 @@ jobs:
           npx prisma migrate deploy --schema=apps/order-service/prisma/schema.prisma
 
       - name: Build, Typecheck, Lint & Unit Tests
-        run: ./node_modules/.bin/nx run-many -t lint test build typecheck --exclude='*-e2e'
+        run: npx nx@22.6.0 run-many -t lint test build typecheck --exclude='*-e2e'
 
       - name: Start Services for E2E Tests
         run: |
-          ./node_modules/.bin/nx run auth-service:serve &
-          ./node_modules/.bin/nx run product-service:serve &
-          ./node_modules/.bin/nx run order-service:serve &
-          ./node_modules/.bin/nx run api-gateway:serve &
+          npx nx@22.6.0 run auth-service:serve &
+          npx nx@22.6.0 run product-service:serve &
+          npx nx@22.6.0 run order-service:serve &
+          npx nx@22.6.0 run api-gateway:serve &
           sleep 60
 
       - name: Run E2E Tests
-        run: ./node_modules/.bin/nx run-many -t e2e
+        run: npx nx@22.6.0 run-many -t e2e
 
       - name: CI Diagnostics
         if: always()
-        run: ./node_modules/.bin/nx report
+        run: npx nx@22.6.0 report
 
       - name: Nx Cloud Self-Healing CI
         if: always()
-        run: ./node_modules/.bin/nx fix-ci
+        run: npx nx@22.6.0 fix-ci
