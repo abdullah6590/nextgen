@@ -18,5 +18,24 @@ model User {
   email     String   @unique
   password  String
   role      String   @default("customer") // 'customer' | 'vendor' | 'admin'
+  emailVerified Boolean @default(false)
+  verificationToken String?
+  verificationTokenExpires DateTime?
   createdAt DateTime @default(now())
+  profile   Profile?
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?
+  @@index([verificationToken])
+}
+
+model Profile {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  user        User     @relation(fields: [userId], references: [id])
+  firstName   String?
+  lastName    String?
+  phone       String?
+  address     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

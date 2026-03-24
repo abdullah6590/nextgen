@@ -24,6 +24,7 @@ interface IProduct extends Document {
   vendorId: string;
   images: string[];
   tags: string[];
+  featureVector?: number[];
   createdAt: Date;
 }
 
@@ -36,6 +37,7 @@ const ProductSchema: Schema = new Schema({
   vendorId: { type: String, required: true },
   images: [{ type: String }],
   tags: [{ type: String }],
+  featureVector: { type: [Number], select: false },
   createdAt: { type: Date, default: Date.now },
 });
 
@@ -78,9 +80,9 @@ app.get('/', async (req, res) => {
       .limit(Number(limit))
       .skip((Number(page) - 1) * Number(limit))
       .sort({ createdAt: -1 });
-    
+
     const count = await Product.countDocuments(query);
-    
+
     res.json({
       products,
       totalPages: Math.ceil(count / Number(limit)),
@@ -104,15 +106,15 @@ app.get('/:id', async (req, res) => {
 
     // Publish to Kafka (Fire & Forget)
     if (req.query.userId) {
-        const payload = {
-            userId: req.query.userId,
-            productId: product._id,
-            timestamp: new Date().toISOString(),
-        };
-        await producer.send({
-            topic: 'product-views',
-            messages: [{ value: JSON.stringify(payload) }],
-        });
+      const payload = {
+        userId: req.query.userId,
+        productId: product._id,
+        timestamp: new Date().toISOString(),
+      };
+      await producer.send({
+        topic: 'product-views',
+        messages: [{ value: JSON.stringify(payload) }],
+      });
     }
 
     res.json(product);
@@ -125,16 +127,84 @@ app.get('/:id', async (req, res) => {
 // PROTECTED ENDPOINTS (auth required)
 // =============================================
 
-// Create Product (authenticated users only)
-app.post('/', authMiddleware as any, async (req: AuthenticatedRequest, res) => {
-  try {
-    const product = new Product(req.body);
-    await product.save();
-    res.status(201).json(product);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+import { roleMiddleware, ROLES } from '../../../libs/shared/authMiddleware';
+
+// Create Product (vendor/admin only)
+app.post('/',
+  authMiddleware as any,
+  roleMiddleware([ROLES.VENDOR, ROLES.ADMIN]),
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      // Add vendorId from authenticated user
+      const productData = {
+        ...req.body,
+        vendorId: req.user!.userId.toString()
+      };
+
+      const product = new Product(productData);
+      await product.save();
+
+      // Emit product creation event
+      await producer.send({
+        topic: 'product-created',
+        messages: [{
+          value: JSON.stringify({
+            productId: product._id,
+            vendorId: product.vendorId,
+            name: product.name,
+            price: product.price,
+            category: product.category
+          })
+        }]
+      });
+
+      res.status(201).json(product);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
   }
-});
+);
+
+// =============================================
+// VENDOR ENDPOINTS (protected by vendor role)
+// =============================================
+
+// Get vendor's products
+app.get('/vendor',
+  authMiddleware as any,
+  roleMiddleware([ROLES.VENDOR, ROLES.ADMIN]),
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      const products = await Product.find({ vendorId: req.user!.userId.toString() });
+      res.json(products);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// Update vendor's product
+app.patch('/vendor/:id',
+  authMiddleware as any,
+  roleMiddleware([ROLES.VENDOR, ROLES.ADMIN]),
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      const product = await Product.findOneAndUpdate(
+        { _id: req.params.id, vendorId: req.user!.userId.toString() },
+        req.body,
+        { new: true }
+      );
+
+      if (!product) {
+        return res.status(404).json({ error: 'Product not found or not owned by vendor' });
+      }
+
+      res.json(product);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
 
 // =============================================
 // INTERNAL SERVICE-TO-SERVICE ENDPOINTS
@@ -148,11 +218,11 @@ app.get('/internal/:id/stock', async (req, res) => {
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
-    res.json({ 
+    res.json({
       productId: product._id,
-      name: product.name, 
-      price: product.price, 
-      stock: product.stock 
+      name: product.name,
+      price: product.price,
+      stock: product.stock
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -174,20 +244,20 @@ app.patch('/internal/:id/decrement', async (req, res) => {
     }
 
     if (product.stock < quantity) {
-      return res.status(400).json({ 
-        error: 'Insufficient stock', 
-        available: product.stock, 
-        requested: quantity 
+      return res.status(400).json({
+        error: 'Insufficient stock',
+        available: product.stock,
+        requested: quantity
       });
     }
 
     product.stock -= quantity;
     await product.save();
 
-    res.json({ 
+    res.json({
       productId: product._id,
       name: product.name,
-      stock: product.stock 
+      stock: product.stock
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

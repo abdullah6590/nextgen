@@ -1,5 +1,8 @@
 import path from "path";
-import { defineConfig, env } from "prisma/config";
+import { defineConfig } from "prisma/config";
+
+// Use DATABASE_URL from environment with fallback
+const databaseUrl = process.env.DATABASE_URL || 'postgresql://admin:password@localhost:5432/eshop_db';
 
 export default defineConfig({
   schema: path.join(__dirname, "prisma/schema.prisma"),
@@ -7,6 +10,6 @@ export default defineConfig({
     path: path.join(__dirname, "prisma/migrations"),
   },
   datasource: {
-    url: env("DATABASE_URL"),
+    url: databaseUrl,
   },
 });

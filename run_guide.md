@@ -53,3 +53,29 @@ Runs: Next.js Frontend applications at `http://localhost:3000` and the next avai
 | Kafka | 9092 |
 
 > ⚠️ Auth-service and frontend both default to 3001. Nx usually auto-assigns the next available port for the auth-service.
+
+Since the AI microservice code is fully integrated, here is the exact step-by-step process to run and test it:
+
+### 1. Let the Background Installation Finish
+The `npm install` for `@tensorflow/tfjs-node` is still running in the background. It takes an unusually long time (often 2-5 minutes) because it has to compile native C++ bindings for TensorFlow. Once that finishes, you are ready to go.
+
+### 2. Start the Monorepo Services
+Use the standard Nx command to spin up all your microservices, the API gateway, and the frontend concurrently:
+```bash
+npx nx run-many -t serve
+```
+
+### 3. Generate Vectors for Existing Inventory (One-time)
+Because your MongoDB products don't currently have the `featureVector` array populated, the search won't work out of the box. I built a warm-up endpoint that uses the AI model to generate vectors for your entire current catalog!
+While the servers are running, open a new terminal tab and run:
+```bash
+curl -X POST http://localhost:8080/visual-search/generate-vectors
+```
+*You will immediately get a JSON response confirming that vectors were generated for all products.*
+
+### 4. Test the AI Visual Search!
+*   Navigate to your storefront UI: `http://localhost:4200/neural`.
+*   Drag and drop any image into the **Visual Search** dashboard component.
+*   You will see the state change to *"Analyzing Neural Patterns..."*
+*   The API will query the MongoDB catalog and instantly populate your `FeaturedProduct` list with the top matches (and their scores will dynamically update based on how mathematically similar they are to the image you uploaded).
+*   **To test the threshold:** Upload a picture of something completely unrelated (like a houseplant or a sandwich). The AI will detect the similarity is below 40% (0.40) and will display the stylish *"Neural scan complete: No similar assets found in the network"* message we just added!

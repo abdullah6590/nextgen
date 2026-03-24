@@ -17,18 +17,26 @@ import type * as Prisma from "./prismaNamespace.js"
 
 const config: runtime.GetPrismaClientConfig = {
   "previewFeatures": [],
-  "clientVersion": "7.1.0",
-  "engineVersion": "ab635e6b9d606fa5c8fb8b1a7f909c3c3c1c98ba",
+  "clientVersion": "7.5.0",
+  "engineVersion": "280c870be64f457428992c43c1f6d557fab6e29e",
   "activeProvider": "postgresql",
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../src/generated/client\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id        Int      @id @default(autoincrement())\n  email     String   @unique\n  password  String\n  role      String   @default(\"customer\") // 'customer' | 'vendor' | 'admin'\n  createdAt DateTime @default(now())\n}\n",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../src/generated/client\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id                       Int       @id @default(autoincrement())\n  email                    String    @unique\n  password                 String\n  role                     String    @default(\"customer\") // 'customer' | 'vendor' | 'admin'\n  emailVerified            Boolean   @default(false)\n  verificationToken        String?\n  verificationTokenExpires DateTime?\n  createdAt                DateTime  @default(now())\n  profile                  Profile?\n  twoFactorEnabled         Boolean   @default(false)\n  twoFactorSecret          String?\n}\n\nmodel Profile {\n  id        Int      @id @default(autoincrement())\n  userId    Int      @unique\n  user      User     @relation(fields: [userId], references: [id])\n  firstName String?\n  lastName  String?\n  phone     String?\n  address   String?\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n",
   "runtimeDataModel": {
     "models": {},
     "enums": {},
     "types": {}
+  },
+  "parameterizationSchema": {
+    "strings": [],
+    "graph": ""
   }
 }
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"emailVerified\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"verificationToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"verificationTokenExpires\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"profile\",\"kind\":\"object\",\"type\":\"Profile\",\"relationName\":\"ProfileToUser\"},{\"name\":\"twoFactorEnabled\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"twoFactorSecret\",\"kind\":\"scalar\",\"type\":\"String\"}],\"dbName\":null},\"Profile\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ProfileToUser\"},{\"name\":\"firstName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"lastName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"address\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.parameterizationSchema = {
+  strings: JSON.parse("[\"where\",\"user\",\"profile\",\"User.findUnique\",\"User.findUniqueOrThrow\",\"orderBy\",\"cursor\",\"User.findFirst\",\"User.findFirstOrThrow\",\"User.findMany\",\"data\",\"User.createOne\",\"User.createMany\",\"User.createManyAndReturn\",\"User.updateOne\",\"User.updateMany\",\"User.updateManyAndReturn\",\"create\",\"update\",\"User.upsertOne\",\"User.deleteOne\",\"User.deleteMany\",\"having\",\"_count\",\"_avg\",\"_sum\",\"_min\",\"_max\",\"User.groupBy\",\"User.aggregate\",\"Profile.findUnique\",\"Profile.findUniqueOrThrow\",\"Profile.findFirst\",\"Profile.findFirstOrThrow\",\"Profile.findMany\",\"Profile.createOne\",\"Profile.createMany\",\"Profile.createManyAndReturn\",\"Profile.updateOne\",\"Profile.updateMany\",\"Profile.updateManyAndReturn\",\"Profile.upsertOne\",\"Profile.deleteOne\",\"Profile.deleteMany\",\"Profile.groupBy\",\"Profile.aggregate\",\"AND\",\"OR\",\"NOT\",\"id\",\"userId\",\"firstName\",\"lastName\",\"phone\",\"address\",\"createdAt\",\"updatedAt\",\"equals\",\"in\",\"notIn\",\"lt\",\"lte\",\"gt\",\"gte\",\"not\",\"contains\",\"startsWith\",\"endsWith\",\"email\",\"password\",\"role\",\"emailVerified\",\"verificationToken\",\"verificationTokenExpires\",\"twoFactorEnabled\",\"twoFactorSecret\",\"is\",\"isNot\",\"connectOrCreate\",\"upsert\",\"disconnect\",\"delete\",\"connect\",\"set\",\"increment\",\"decrement\",\"multiply\",\"divide\"]"),
+  graph: "dBUgDgIAAFMAIC4AAE4AMC8AAAYAEDAAAE4AMDECAAAAATdAAEIAIUQBAAAAAUUBAFAAIUYBAFAAIUcgAFEAIUgBAEEAIUlAAFIAIUogAFEAIUsBAEEAIQEAAAABACAMAQAAQwAgLgAAQAAwLwAAAwAQMAAAQAAwMQIATwAhMgIATwAhMwEAQQAhNAEAQQAhNQEAQQAhNgEAQQAhN0AAQgAhOEAAQgAhAQAAAAMAIAEAAAABACAOAgAAUwAgLgAATgAwLwAABgAQMAAATgAwMQIATwAhN0AAQgAhRAEAUAAhRQEAUAAhRgEAUAAhRyAAUQAhSAEAQQAhSUAAUgAhSiAAUQAhSwEAQQAhBAIAAG8AIEgAAFQAIEkAAFQAIEsAAFQAIAMAAAAGACAFAAAHADAGAAABACADAAAABgAgBQAABwAwBgAAAQAgAwAAAAYAIAUAAAcAMAYAAAEAIAsCAABuACAxAgAAAAE3QAAAAAFEAQAAAAFFAQAAAAFGAQAAAAFHIAAAAAFIAQAAAAFJQAAAAAFKIAAAAAFLAQAAAAEBCgAACwAgCjECAAAAATdAAAAAAUQBAAAAAUUBAAAAAUYBAAAAAUcgAAAAAUgBAAAAAUlAAAAAAUogAAAAAUsBAAAAAQEKAAANADABCgAADQAwCwIAAGgAIDECAFwAITdAAFsAIUQBAGUAIUUBAGUAIUYBAGUAIUcgAGYAIUgBAFoAIUlAAGcAIUogAGYAIUsBAFoAIQIAAAABACAKAAAQACAKMQIAXAAhN0AAWwAhRAEAZQAhRQEAZQAhRgEAZQAhRyAAZgAhSAEAWgAhSUAAZwAhSiAAZgAhSwEAWgAhAgAAAAYAIAoAABIAIAIAAAAGACAKAAASACADAAAAAQAgEQAACwAgEgAAEAAgAQAAAAEAIAEAAAAGACAIFwAAYAAgGAAAYQAgGQAAZAAgGgAAYwAgGwAAYgAgSAAAVAAgSQAAVAAgSwAAVAAgDS4AAEQAMC8AABkAEDAAAEQAMDECADUAITdAADcAIUQBAEUAIUUBAEUAIUYBAEUAIUcgAEYAIUgBADYAIUlAAEcAIUogAEYAIUsBADYAIQMAAAAGACAFAAAYADAWAAAZACADAAAABgAgBQAABwAwBgAAAQAgDAEAAEMAIC4AAEAAMC8AAAMAEDAAAEAAMDECAAAAATICAAAAATMBAEEAITQBAEEAITUBAEEAITYBAEEAITdAAEIAIThAAEIAIQEAAAAcACABAAAAHAAgBQEAAF8AIDMAAFQAIDQAAFQAIDUAAFQAIDYAAFQAIAMAAAADACAFAAAfADAGAAAcACADAAAAAwAgBQAAHwAwBgAAHAAgAwAAAAMAIAUAAB8AMAYAABwAIAkBAABeACAxAgAAAAEyAgAAAAEzAQAAAAE0AQAAAAE1AQAAAAE2AQAAAAE3QAAAAAE4QAAAAAEBCgAAIwAgCDECAAAAATICAAAAATMBAAAAATQBAAAAATUBAAAAATYBAAAAATdAAAAAAThAAAAAAQEKAAAlADABCgAAJQAwCQEAAF0AIDECAFwAITICAFwAITMBAFoAITQBAFoAITUBAFoAITYBAFoAITdAAFsAIThAAFsAIQIAAAAcACAKAAAoACAIMQIAXAAhMgIAXAAhMwEAWgAhNAEAWgAhNQEAWgAhNgEAWgAhN0AAWwAhOEAAWwAhAgAAAAMAIAoAACoAIAIAAAADACAKAAAqACADAAAAHAAgEQAAIwAgEgAAKAAgAQAAABwAIAEAAAADACAJFwAAVQAgGAAAVgAgGQAAWQAgGgAAWAAgGwAAVwAgMwAAVAAgNAAAVAAgNQAAVAAgNgAAVAAgCy4AADQAMC8AADEAEDAAADQAMDECADUAITICADUAITMBADYAITQBADYAITUBADYAITYBADYAITdAADcAIThAADcAIQMAAAADACAFAAAwADAWAAAxACADAAAAAwAgBQAAHwAwBgAAHAAgCy4AADQAMC8AADEAEDAAADQAMDECADUAITICADUAITMBADYAITQBADYAITUBADYAITYBADYAITdAADcAIThAADcAIQ0XAAA5ACAYAAA_ACAZAAA5ACAaAAA5ACAbAAA5ACA5AgAAAAE6AgAAAAQ7AgAAAAQ8AgAAAAE9AgAAAAE-AgAAAAE_AgAAAAFAAgA-ACEOFwAAPAAgGgAAPQAgGwAAPQAgOQEAAAABOgEAAAAFOwEAAAAFPAEAAAABPQEAAAABPgEAAAABPwEAAAABQAEAOwAhQQEAAAABQgEAAAABQwEAAAABCxcAADkAIBoAADoAIBsAADoAIDlAAAAAATpAAAAABDtAAAAABDxAAAAAAT1AAAAAAT5AAAAAAT9AAAAAAUBAADgAIQsXAAA5ACAaAAA6ACAbAAA6ACA5QAAAAAE6QAAAAAQ7QAAAAAQ8QAAAAAE9QAAAAAE-QAAAAAE_QAAAAAFAQAA4ACEIOQIAAAABOgIAAAAEOwIAAAAEPAIAAAABPQIAAAABPgIAAAABPwIAAAABQAIAOQAhCDlAAAAAATpAAAAABDtAAAAABDxAAAAAAT1AAAAAAT5AAAAAAT9AAAAAAUBAADoAIQ4XAAA8ACAaAAA9ACAbAAA9ACA5AQAAAAE6AQAAAAU7AQAAAAU8AQAAAAE9AQAAAAE-AQAAAAE_AQAAAAFAAQA7ACFBAQAAAAFCAQAAAAFDAQAAAAEIOQIAAAABOgIAAAAFOwIAAAAFPAIAAAABPQIAAAABPgIAAAABPwIAAAABQAIAPAAhCzkBAAAAAToBAAAABTsBAAAABTwBAAAAAT0BAAAAAT4BAAAAAT8BAAAAAUABAD0AIUEBAAAAAUIBAAAAAUMBAAAAAQ0XAAA5ACAYAAA_ACAZAAA5ACAaAAA5ACAbAAA5ACA5AgAAAAE6AgAAAAQ7AgAAAAQ8AgAAAAE9AgAAAAE-AgAAAAE_AgAAAAFAAgA-ACEIOQgAAAABOggAAAAEOwgAAAAEPAgAAAABPQgAAAABPggAAAABPwgAAAABQAgAPwAhDAEAAEMAIC4AAEAAMC8AAAMAEDAAAEAAMDECAE8AITICAE8AITMBAEEAITQBAEEAITUBAEEAITYBAEEAITdAAEIAIThAAEIAIQs5AQAAAAE6AQAAAAU7AQAAAAU8AQAAAAE9AQAAAAE-AQAAAAE_AQAAAAFAAQA9ACFBAQAAAAFCAQAAAAFDAQAAAAEIOUAAAAABOkAAAAAEO0AAAAAEPEAAAAABPUAAAAABPkAAAAABP0AAAAABQEAAOgAhEAIAAFMAIC4AAE4AMC8AAAYAEDAAAE4AMDECAE8AITdAAEIAIUQBAFAAIUUBAFAAIUYBAFAAIUcgAFEAIUgBAEEAIUlAAFIAIUogAFEAIUsBAEEAIUwAAAYAIE0AAAYAIA0uAABEADAvAAAZABAwAABEADAxAgA1ACE3QAA3ACFEAQBFACFFAQBFACFGAQBFACFHIABGACFIAQA2ACFJQABHACFKIABGACFLAQA2ACEOFwAAOQAgGgAATQAgGwAATQAgOQEAAAABOgEAAAAEOwEAAAAEPAEAAAABPQEAAAABPgEAAAABPwEAAAABQAEATAAhQQEAAAABQgEAAAABQwEAAAABBRcAADkAIBoAAEsAIBsAAEsAIDkgAAAAAUAgAEoAIQsXAAA8ACAaAABJACAbAABJACA5QAAAAAE6QAAAAAU7QAAAAAU8QAAAAAE9QAAAAAE-QAAAAAE_QAAAAAFAQABIACELFwAAPAAgGgAASQAgGwAASQAgOUAAAAABOkAAAAAFO0AAAAAFPEAAAAABPUAAAAABPkAAAAABP0AAAAABQEAASAAhCDlAAAAAATpAAAAABTtAAAAABTxAAAAAAT1AAAAAAT5AAAAAAT9AAAAAAUBAAEkAIQUXAAA5ACAaAABLACAbAABLACA5IAAAAAFAIABKACECOSAAAAABQCAASwAhDhcAADkAIBoAAE0AIBsAAE0AIDkBAAAAAToBAAAABDsBAAAABDwBAAAAAT0BAAAAAT4BAAAAAT8BAAAAAUABAEwAIUEBAAAAAUIBAAAAAUMBAAAAAQs5AQAAAAE6AQAAAAQ7AQAAAAQ8AQAAAAE9AQAAAAE-AQAAAAE_AQAAAAFAAQBNACFBAQAAAAFCAQAAAAFDAQAAAAEOAgAAUwAgLgAATgAwLwAABgAQMAAATgAwMQIATwAhN0AAQgAhRAEAUAAhRQEAUAAhRgEAUAAhRyAAUQAhSAEAQQAhSUAAUgAhSiAAUQAhSwEAQQAhCDkCAAAAAToCAAAABDsCAAAABDwCAAAAAT0CAAAAAT4CAAAAAT8CAAAAAUACADkAIQs5AQAAAAE6AQAAAAQ7AQAAAAQ8AQAAAAE9AQAAAAE-AQAAAAE_AQAAAAFAAQBNACFBAQAAAAFCAQAAAAFDAQAAAAECOSAAAAABQCAASwAhCDlAAAAAATpAAAAABTtAAAAABTxAAAAAAT1AAAAAAT5AAAAAAT9AAAAAAUBAAEkAIQ4BAABDACAuAABAADAvAAADABAwAABAADAxAgBPACEyAgBPACEzAQBBACE0AQBBACE1AQBBACE2AQBBACE3QABCACE4QABCACFMAAADACBNAAADACAAAAAAAAABUwEAAAABAVNAAAAAAQVTAgAAAAFUAgAAAAFVAgAAAAFWAgAAAAFXAgAAAAEFEQAAcAAgEgAAcwAgTgAAcQAgTwAAcgAgUgAAAQAgAxEAAHAAIE4AAHEAIFIAAAEAIAQCAABvACBIAABUACBJAABUACBLAABUACAAAAAAAAFTAQAAAAEBUyAAAAABAVNAAAAAAQcRAABpACASAABsACBOAABqACBPAABrACBQAAADACBRAAADACBSAAAcACAHMQIAAAABMwEAAAABNAEAAAABNQEAAAABNgEAAAABN0AAAAABOEAAAAABAgAAABwAIBEAAGkAIAMAAAADACARAABpACASAABtACAJAAAAAwAgCgAAbQAgMQIAXAAhMwEAWgAhNAEAWgAhNQEAWgAhNgEAWgAhN0AAWwAhOEAAWwAhBzECAFwAITMBAFoAITQBAFoAITUBAFoAITYBAFoAITdAAFsAIThAAFsAIQMRAABpACBOAABqACBSAAAcACAFAQAAXwAgMwAAVAAgNAAAVAAgNQAAVAAgNgAAVAAgCjECAAAAATdAAAAAAUQBAAAAAUUBAAAAAUYBAAAAAUcgAAAAAUgBAAAAAUlAAAAAAUogAAAAAUsBAAAAAQIAAAABACARAABwACADAAAABgAgEQAAcAAgEgAAdAAgDAAAAAYAIAoAAHQAIDECAFwAITdAAFsAIUQBAGUAIUUBAGUAIUYBAGUAIUcgAGYAIUgBAFoAIUlAAGcAIUogAGYAIUsBAFoAIQoxAgBcACE3QABbACFEAQBlACFFAQBlACFGAQBlACFHIABmACFIAQBaACFJQABnACFKIABmACFLAQBaACEBAgQCAQEAAQAAAAUXAAcYAAgZAAkaAAobAAsAAAAAAAUXAAcYAAgZAAkaAAobAAsBAQABAQEAAQUXABAYABEZABIaABMbABQAAAAAAAUXABAYABEZABIaABMbABQDAgEEBQEHCAEICQEJCgELDAEMDgMNDwQOEQEPEwMQFAUTFQEUFgEVFwMcGgYdGwweHQIfHgIgIAIhIQIiIgIjJAIkJgMlJw0mKQInKwMoLA4pLQIqLgIrLwMsMg8tMxU"
+}
 
 async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Module> {
   const { Buffer } = await import('node:buffer')
@@ -37,12 +45,14 @@ async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Modul
 }
 
 config.compilerWasm = {
-  getRuntime: async () => await import("@prisma/client/runtime/query_compiler_bg.postgresql.mjs"),
+  getRuntime: async () => await import("@prisma/client/runtime/query_compiler_fast_bg.postgresql.mjs"),
 
   getQueryCompilerWasmModule: async () => {
-    const { wasm } = await import("@prisma/client/runtime/query_compiler_bg.postgresql.wasm-base64.mjs")
+    const { wasm } = await import("@prisma/client/runtime/query_compiler_fast_bg.postgresql.wasm-base64.mjs")
     return await decodeBase64AsWasm(wasm)
-  }
+  },
+
+  importName: "./query_compiler_fast_bg.js"
 }
 
 
@@ -57,7 +67,9 @@ export interface PrismaClientConstructor {
    * Type-safe database client for TypeScript
    * @example
    * ```
-   * const prisma = new PrismaClient()
+   * const prisma = new PrismaClient({
+   *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
+   * })
    * // Fetch zero or more Users
    * const users = await prisma.user.findMany()
    * ```
@@ -79,7 +91,9 @@ export interface PrismaClientConstructor {
  * Type-safe database client for TypeScript
  * @example
  * ```
- * const prisma = new PrismaClient()
+ * const prisma = new PrismaClient({
+ *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
+ * })
  * // Fetch zero or more Users
  * const users = await prisma.user.findMany()
  * ```
@@ -164,7 +178,7 @@ export interface PrismaClient<
    * ])
    * ```
    * 
-   * Read more in our [docs](https://www.prisma.io/docs/concepts/components/prisma-client/transactions).
+   * Read more in our [docs](https://www.prisma.io/docs/orm/prisma-client/queries/transactions).
    */
   $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { isolationLevel?: Prisma.TransactionIsolationLevel }): runtime.Types.Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
 
@@ -183,6 +197,16 @@ export interface PrismaClient<
     * ```
     */
   get user(): Prisma.UserDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.profile`: Exposes CRUD operations for the **Profile** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Profiles
+    * const profiles = await prisma.profile.findMany()
+    * ```
+    */
+  get profile(): Prisma.ProfileDelegate<ExtArgs, { omit: OmitOpts }>;
 }
 
 export function getPrismaClientClass(): PrismaClientConstructor {

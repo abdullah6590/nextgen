@@ -4,7 +4,7 @@ import axios from 'axios';
 import { PrismaClient } from './generated/client/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
-import { authMiddleware, AuthenticatedRequest } from '../../../libs/shared/authMiddleware';
+import { authMiddleware, roleMiddleware, ROLES, AuthenticatedRequest } from '../../../libs/shared/authMiddleware';
 
 const app = express();
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -24,7 +24,7 @@ app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.post('/', authMiddleware as any, async (req: AuthenticatedRequest, res) => {
   const { items } = req.body;
   const userId = req.user!.userId.toString();
-  
+
   if (!items || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'Cart is empty' });
   }
@@ -107,12 +107,47 @@ app.post('/', authMiddleware as any, async (req: AuthenticatedRequest, res) => {
       },
     });
 
+    // Emit order-created event
+    producer.send({
+      topic: 'order-created',
+      messages: [
+        {
+          value: JSON.stringify({
+            orderId: order.id,
+            userId: order.userId,
+            totalAmount: order.totalAmount,
+            items: order.items.map(item => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              price: item.price
+            }))
+          })
+        }
+      ]
+    }).catch(err => console.error('Failed to emit order-created event', err));
+
     res.status(201).json(order);
   } catch (error) {
     console.error('Order creation failed:', error);
     res.status(500).json({ error: 'Failed to create order' });
   }
 });
+
+// Emit order-created event to Kafka
+import { Kafka } from 'kafkajs';
+
+const kafka = new Kafka({
+  clientId: 'order-service',
+  brokers: ['localhost:9092'],
+});
+
+const producer = kafka.producer();
+
+async function connectProducer() {
+  await producer.connect();
+}
+
+connectProducer().catch(console.error);
 
 // GET /orders/my-orders - Get authenticated user's orders
 app.get('/my-orders', authMiddleware as any, async (req: AuthenticatedRequest, res) => {
@@ -131,6 +166,51 @@ app.get('/my-orders', authMiddleware as any, async (req: AuthenticatedRequest, r
     res.json(orders);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch orders' });
+  }
+});
+
+// GET /vendor/orders - Get orders for vendor's products
+app.get('/vendor/orders', authMiddleware as any, roleMiddleware([ROLES.VENDOR, ROLES.ADMIN]), async (req: AuthenticatedRequest, res) => {
+  try {
+    const token = req.headers.authorization;
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    // Get vendor's products from Product Service
+    const { data: vendorProducts } = await axios.get(`${PRODUCT_SERVICE_URL}/vendor`, {
+      headers: { Authorization: token }
+    });
+    
+    const vendorProductIds = vendorProducts.map((p: any) => p._id.toString());
+    
+    if (vendorProductIds.length === 0) {
+      return res.json([]);
+    }
+
+    // Find orders containing any of these products
+    const orders = await prisma.order.findMany({
+      where: {
+        items: {
+          some: {
+            productId: {
+              in: vendorProductIds
+            }
+          }
+        }
+      },
+      include: {
+        items: true
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    res.json(orders);
+  } catch (error) {
+    console.error('Failed to fetch vendor orders:', error);
+    res.status(500).json({ error: 'Failed to fetch vendor orders' });
   }
 });
 
