@@ -27,10 +27,14 @@ app.use(limiter);
 // Request logging
 app.use(morgan('combined'));
 
-app.use('/auth', proxy('http://localhost:3001'));
-app.use('/products', proxy('http://localhost:3002'));
-app.use('/orders', proxy('http://localhost:3003'));
-app.use('/visual-search', proxy('http://localhost:3004'));
+app.use('/auth', proxy('http://127.0.0.1:3001', { limit: '50mb' }));
+app.use('/products', proxy('http://127.0.0.1:3002', { limit: '50mb' }));
+app.use('/orders', proxy('http://127.0.0.1:3003', { limit: '50mb' }));
+app.use('/visual-search', proxy('http://127.0.0.1:3004', { limit: '50mb', proxyReqOptDecorator: function(proxyReqOpts, srcReq) {
+  // Ensure we don't accidentally time out on large ML uploads
+  proxyReqOpts.timeout = 10000;
+  return proxyReqOpts;
+} }));
 
 app.get('/', (req, res) => {
   res.send({ message: 'API Gateway is running' });

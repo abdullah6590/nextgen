@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 
 export const TopNav = () => {
   return (
@@ -8,11 +9,10 @@ export const TopNav = () => {
       <div className="flex justify-between items-center w-full px-8 py-4 max-w-[1920px] mx-auto">
         <div className="text-2xl font-black tracking-tighter text-cyan-400 font-headline uppercase">NEURAL_ARC</div>
         <div className="hidden md:flex items-center gap-8 font-headline tracking-tight uppercase text-sm">
-          <a className="text-cyan-400 border-b-2 border-cyan-400 pb-1" href="#">Storefront</a>
-          <a className="text-slate-400 hover:text-cyan-200 transition-colors" href="#">Visual Search</a>
-          <a className="text-slate-400 hover:text-cyan-200 transition-colors" href="#">Vendors</a>
-          <a className="text-slate-400 hover:text-cyan-200 transition-colors" href="#">Catalog</a>
-          <a className="text-slate-400 hover:text-cyan-200 transition-colors" href="#">Analytics</a>
+          <Link className="text-slate-400 hover:text-cyan-200 transition-colors" href="/">Storefront</Link>
+          <Link className="text-cyan-400 border-b-2 border-cyan-400 pb-1" href="/neural">Visual Search</Link>
+          <Link className="text-slate-400 hover:text-cyan-200 transition-colors" href="/products">Catalog</Link>
+          <Link className="text-slate-400 hover:text-cyan-200 transition-colors" href="/checkout">Checkout</Link>
         </div>
         <div className="flex items-center gap-6">
           <button className="text-slate-400 hover:text-cyan-400 transition-colors hover:scale-110 active:scale-90 transition-transform">

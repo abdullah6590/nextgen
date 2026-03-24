@@ -6,7 +6,7 @@ import * as tf from '@tensorflow/tfjs-node';
 import * as mobilenet from '@tensorflow-models/mobilenet';
 
 // MongoDB Connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/eshop_products';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/eshop_products';
 mongoose.connect(MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));

@@ -1,10 +1,25 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
-export default function VisualSearchOverlay({ onClose }: { onClose?: () => void }) {
-  return (
-    <div className="fixed inset-0 z-[60] bg-surface-container-lowest/15 backdrop-blur-[40px] flex flex-col items-center justify-center p-6 md:p-12">
+export default function VisualSearchOverlay({ onClose, imageUrl }: { onClose?: () => void, imageUrl?: string }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const overlayContent = (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="fixed inset-0 z-[999] bg-[#09090b]/60 backdrop-blur-[64px] flex flex-col items-center justify-center p-6 md:p-12"
+      style={{ backdropFilter: "blur(64px)", WebkitBackdropFilter: "blur(64px)" }}
+    >
       {/* Header Controls */}
       <div className="absolute top-24 left-8 right-8 flex justify-between items-center">
         <div className="flex items-center gap-4">
@@ -36,7 +51,7 @@ export default function VisualSearchOverlay({ onClose }: { onClose?: () => void 
             <img 
               alt="Uploaded Search Asset" 
               className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuATfhH5Gel5p1mQciB21TKrkotDlMN0WtjnRNOM6pjtXn7VgBRwlOaT7iMbqvLeDJPXjj1VSfZEia-HgZuejdcpIIH00IwGeflqaV63koXaENCWVqGMJZN6Gs1XKCwhBxlrwrhUzYFFvkpSuYjc7IQs-Ql_1kJQyKnPPeOZcoizNgMLGDF-UTuJWJX-koTqCaSuFjni7rPKsLtr7XVWCN8i8oYMrmllzmvsUKz7puhPrTalA4B4O7g1TJh13lhjyxnUqv7SKQSh2NPW" 
+              src={imageUrl || "https://lh3.googleusercontent.com/aida-public/AB6AXuATfhH5Gel5p1mQciB21TKrkotDlMN0WtjnRNOM6pjtXn7VgBRwlOaT7iMbqvLeDJPXjj1VSfZEia-HgZuejdcpIIH00IwGeflqaV63koXaENCWVqGMJZN6Gs1XKCwhBxlrwrhUzYFFvkpSuYjc7IQs-Ql_1kJQyKnPPeOZcoizNgMLGDF-UTuJWJX-koTqCaSuFjni7rPKsLtr7XVWCN8i8oYMrmllzmvsUKz7puhPrTalA4B4O7g1TJh13lhjyxnUqv7SKQSh2NPW"} 
             />
             
             {/* Scanning Overlay */}
@@ -206,6 +221,9 @@ export default function VisualSearchOverlay({ onClose }: { onClose?: () => void 
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
+
+  if (!mounted) return null;
+  return createPortal(overlayContent, document.body);
 }

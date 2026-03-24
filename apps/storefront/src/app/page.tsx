@@ -27,11 +27,11 @@ export default function StorefrontHomePage() {
         <div className="flex justify-between items-center w-full px-8 py-4 max-w-[1920px] mx-auto">
           <div className="text-2xl font-black tracking-tighter text-cyan-400 font-headline uppercase">NEURAL_ARC</div>
           <div className="hidden md:flex items-center gap-8 font-headline tracking-tight uppercase text-sm">
-            <a className="text-cyan-400 border-b-2 border-cyan-400 pb-1" href="/">Storefront</a>
-            <button className="text-slate-400 hover:text-cyan-200 transition-colors font-headline tracking-tight uppercase text-sm uppercase" onClick={() => setShowVisualSearch(true)}>Visual Search</button>
-            <a className="text-slate-400 hover:text-cyan-200 transition-colors" href="/products">Catalog</a>
-            <a className="text-slate-400 hover:text-cyan-200 transition-colors" href="/checkout">Checkout</a>
-            <a className="text-slate-400 hover:text-cyan-200 transition-colors" href="#">Vendors</a>
+            <Link className="text-cyan-400 border-b-2 border-cyan-400 pb-1" href="/">Storefront</Link>
+            <Link className="text-slate-400 hover:text-cyan-200 transition-colors uppercase" href="/neural">Visual Search</Link>
+            <Link className="text-slate-400 hover:text-cyan-200 transition-colors" href="/products">Catalog</Link>
+            <Link className="text-slate-400 hover:text-cyan-200 transition-colors" href="/checkout">Checkout</Link>
+            <Link className="text-slate-400 hover:text-cyan-200 transition-colors" href="/vendors">Vendors</Link>
           </div>
           <div className="flex items-center gap-6">
             <button className="text-slate-400 hover:text-cyan-400 transition-colors hover:scale-110 active:scale-90 transition-transform">
@@ -74,18 +74,20 @@ export default function StorefrontHomePage() {
           </motion.div>
 
           {/* Visual Search (Side Tile) */}
-          <motion.div variants={item} className="col-span-12 lg:col-span-4 row-span-1 bg-[rgba(19,19,21,0.15)] backdrop-blur-[20px] shadow-[0_4px_30px_rgba(0,0,0,0.1)] border border-cyan-500/20 rounded-lg p-8 flex flex-col justify-between hover:-translate-y-2 hover:scale-[1.01] hover:shadow-[0_20px_40px_rgba(0,0,0,0.4),0_0_20px_rgba(76,215,246,0.1)] transition-all duration-300 group">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-primary font-label text-xs tracking-widest uppercase mb-1">Module 01</p>
-                <h2 className="font-headline text-2xl font-bold uppercase tracking-tight">Visual Search</h2>
+          <motion.div variants={item} className="col-span-12 lg:col-span-4 row-span-1 bg-[rgba(19,19,21,0.15)] backdrop-blur-[20px] shadow-[0_4px_30px_rgba(0,0,0,0.1)] border border-cyan-500/20 rounded-lg p-0 flex flex-col justify-between hover:-translate-y-2 hover:scale-[1.01] hover:shadow-[0_20px_40px_rgba(0,0,0,0.4),0_0_20px_rgba(76,215,246,0.1)] transition-all duration-300 group overflow-hidden cursor-pointer">
+            <Link href="/neural" className="flex flex-col h-full justify-between p-8">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-primary font-label text-xs tracking-widest uppercase mb-1">Module 01</p>
+                  <h2 className="font-headline text-2xl font-bold uppercase tracking-tight">Visual Search</h2>
+                </div>
+                <span className="material-symbols-outlined text-cyan-500/50 group-hover:text-cyan-400 transition-colors">camera_enhance</span>
               </div>
-              <span className="material-symbols-outlined text-cyan-500/50 group-hover:text-cyan-400 transition-colors">camera_enhance</span>
-            </div>
-            <p className="text-slate-400 text-sm leading-relaxed mb-6">Drop any asset to find neural matches across the entire Aetheris network.</p>
-            <div className="h-32 rounded-xl border-2 border-dashed border-outline-variant/30 flex items-center justify-center bg-surface-container-lowest group-hover:border-primary/50 transition-colors">
-              <span className="text-slate-500 font-label text-xs uppercase tracking-tighter">Initialize Upload Protocol</span>
-            </div>
+              <p className="text-slate-400 text-sm leading-relaxed mb-6">Drop any asset to find neural matches across the entire Aetheris network.</p>
+              <div className="h-32 rounded-xl border-2 border-dashed border-outline-variant/30 flex items-center justify-center bg-surface-container-lowest group-hover:border-primary/50 transition-colors">
+                <span className="text-slate-500 font-label text-xs uppercase tracking-tighter">Enter Neural Search Core</span>
+              </div>
+            </Link>
           </motion.div>
 
           {/* New Assets Status (Side Tile) */}
