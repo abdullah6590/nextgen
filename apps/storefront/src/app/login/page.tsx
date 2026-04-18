@@ -15,6 +15,11 @@ export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
 
+  // 2FA state
+  const [needs2FA, setNeeds2FA] = useState(false);
+  const [tempToken, setTempToken] = useState('');
+  const [totpCode, setTotpCode] = useState('');
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -22,10 +27,36 @@ export default function LoginPage() {
 
     try {
       const response = await api.post('/auth/login', { email, password });
-      login(response.data.token);
+
+      // Check if 2FA is required
+      if (response.data.requires2FA) {
+        setNeeds2FA(true);
+        setTempToken(response.data.tempToken);
+      } else {
+        login(response.data.token);
+        router.push('/');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.response?.data?.message || 'Failed to authenticate. Access denied.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handle2FASubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await api.post('/auth/login-2fa', {
+        tempToken,
+        token: totpCode,
+      });
+      login(response.data.accessToken);
       router.push('/');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to authenticate. Access denied.');
+      setError(err.response?.data?.message || 'Invalid verification code.');
     } finally {
       setLoading(false);
     }
@@ -107,56 +138,110 @@ export default function LoginPage() {
 
           <div className="flex flex-col items-center mb-10 relative z-10">
             <div className="w-16 h-16 rounded-2xl bg-[#1c1b1d] border border-[#4cd7f6]/30 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(76,215,246,0.15)] group hover:scale-105 transition-transform cursor-default">
-               <span className="material-symbols-outlined text-[#4cd7f6] text-3xl group-hover:rotate-12 transition-transform duration-500" style={{ fontVariationSettings: "'FILL' 1" }}>fingerprint</span>
+               <span className="material-symbols-outlined text-[#4cd7f6] text-3xl group-hover:rotate-12 transition-transform duration-500" style={{ fontVariationSettings: "'FILL' 1" }}>
+                 {needs2FA ? 'security' : 'fingerprint'}
+               </span>
             </div>
-            <h2 className="text-3xl font-headline font-black uppercase tracking-widest text-white text-center">Identity<br/>Verification</h2>
+            <h2 className="text-3xl font-headline font-black uppercase tracking-widest text-white text-center">
+              {needs2FA ? (<>Two-Factor<br/>Authentication</>) : (<>Identity<br/>Verification</>)}
+            </h2>
+            {needs2FA && (
+              <p className="text-[10px] text-[#bcc9cd] uppercase tracking-widest mt-3">Enter the code from your authenticator app</p>
+            )}
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-            {error && (
-              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-[#ef4444]/10 border border-[#ef4444]/30 text-[#ef4444] text-xs uppercase tracking-widest px-4 py-3 rounded-[12px] text-center font-bold">
-                {error}
-              </motion.div>
-            )}
-            
-            <div className="space-y-2 group">
-              <label className="text-[10px] text-[#bcc9cd] uppercase tracking-widest font-bold ml-1 group-focus-within:text-[#4cd7f6] transition-colors">Secure Identifier Node</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-[#4cd7f6]/50 text-sm group-focus-within:text-[#4cd7f6]">alternate_email</span>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="operator@neural-arc.net"
-                  className="w-full cyber-input pt-4 pb-3 pl-11 pr-4 rounded-[14px] text-sm placeholder:text-[#3d494c]/80"
-                  required
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2 group">
-              <label className="text-[10px] text-[#bcc9cd] uppercase tracking-widest font-bold ml-1 group-focus-within:text-[#4cd7f6] transition-colors">Encryption Key Sequence</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-[#4cd7f6]/50 text-sm group-focus-within:text-[#4cd7f6]">key</span>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full cyber-input pt-4 pb-3 pl-11 pr-4 rounded-[14px] text-[18px] tracking-[0.2em] placeholder:text-[#3d494c]/80"
-                  required
-                />
-              </div>
-            </div>
-
-            <button type="submit" disabled={loading} className="w-full py-4 mt-6 rounded-[14px] bg-[#4cd7f6] text-[#003640] font-headline font-black uppercase tracking-[0.2em] scale-100 hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 shadow-[0_0_20px_rgba(76,215,246,0.2)] hover:shadow-[0_0_30px_rgba(76,215,246,0.4)] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-3">
-              {loading ? (
-                <><span className="material-symbols-outlined animate-spin text-sm">rotate_right</span> OVERRIDING</>
-              ) : (
-                <><span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>lock_open</span> INITIATE OVERRIDE</>
+          {!needs2FA ? (
+            /* Standard Login Form */
+            <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+              {error && (
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-[#ef4444]/10 border border-[#ef4444]/30 text-[#ef4444] text-xs uppercase tracking-widest px-4 py-3 rounded-[12px] text-center font-bold">
+                  {error}
+                </motion.div>
               )}
-            </button>
-          </form>
+              
+              <div className="space-y-2 group">
+                <label className="text-[10px] text-[#bcc9cd] uppercase tracking-widest font-bold ml-1 group-focus-within:text-[#4cd7f6] transition-colors">Secure Identifier Node</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-[#4cd7f6]/50 text-sm group-focus-within:text-[#4cd7f6]">alternate_email</span>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="operator@neural-arc.net"
+                    className="w-full cyber-input pt-4 pb-3 pl-11 pr-4 rounded-[14px] text-sm placeholder:text-[#3d494c]/80"
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2 group">
+                <label className="text-[10px] text-[#bcc9cd] uppercase tracking-widest font-bold ml-1 group-focus-within:text-[#4cd7f6] transition-colors">Encryption Key Sequence</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-[#4cd7f6]/50 text-sm group-focus-within:text-[#4cd7f6]">key</span>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full cyber-input pt-4 pb-3 pl-11 pr-4 rounded-[14px] text-[18px] tracking-[0.2em] placeholder:text-[#3d494c]/80"
+                    required
+                  />
+                </div>
+              </div>
+
+              <button type="submit" disabled={loading} className="w-full py-4 mt-6 rounded-[14px] bg-[#4cd7f6] text-[#003640] font-headline font-black uppercase tracking-[0.2em] scale-100 hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 shadow-[0_0_20px_rgba(76,215,246,0.2)] hover:shadow-[0_0_30px_rgba(76,215,246,0.4)] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-3">
+                {loading ? (
+                  <><span className="material-symbols-outlined animate-spin text-sm">rotate_right</span> OVERRIDING</>
+                ) : (
+                  <><span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>lock_open</span> INITIATE OVERRIDE</>
+                )}
+              </button>
+            </form>
+          ) : (
+            /* 2FA Verification Form */
+            <form onSubmit={handle2FASubmit} className="space-y-6 relative z-10">
+              {error && (
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-[#ef4444]/10 border border-[#ef4444]/30 text-[#ef4444] text-xs uppercase tracking-widest px-4 py-3 rounded-[12px] text-center font-bold">
+                  {error}
+                </motion.div>
+              )}
+
+              <div className="space-y-2 group">
+                <label className="text-[10px] text-[#bcc9cd] uppercase tracking-widest font-bold ml-1 group-focus-within:text-[#4cd7f6] transition-colors">TOTP Verification Code</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-[#4cd7f6]/50 text-sm group-focus-within:text-[#4cd7f6]">pin</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={6}
+                    value={totpCode}
+                    onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ''))}
+                    placeholder="000000"
+                    className="w-full cyber-input pt-4 pb-3 pl-11 pr-4 rounded-[14px] text-[24px] tracking-[0.4em] text-center font-mono placeholder:text-[#3d494c]/80"
+                    required
+                    autoFocus
+                  />
+                </div>
+              </div>
+
+              <button type="submit" disabled={loading || totpCode.length !== 6} className="w-full py-4 mt-6 rounded-[14px] bg-[#4cd7f6] text-[#003640] font-headline font-black uppercase tracking-[0.2em] scale-100 hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 shadow-[0_0_20px_rgba(76,215,246,0.2)] hover:shadow-[0_0_30px_rgba(76,215,246,0.4)] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-3">
+                {loading ? (
+                  <><span className="material-symbols-outlined animate-spin text-sm">rotate_right</span> VERIFYING</>
+                ) : (
+                  <><span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>verified_user</span> VERIFY IDENTITY</>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => { setNeeds2FA(false); setTotpCode(''); setTempToken(''); setError(''); }}
+                className="w-full py-3 text-[10px] text-[#bcc9cd] uppercase tracking-widest hover:text-[#4cd7f6] transition-colors"
+              >
+                ← Back to login
+              </button>
+            </form>
+          )}
 
           <div className="mt-8 pt-8 border-t border-[#3d494c]/20 text-center relative z-10">
             <p className="text-[11px] text-[#bcc9cd] uppercase tracking-widest">

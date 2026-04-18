@@ -1,5 +1,7 @@
 'use client';
 
+import { NavLink } from '../../components/neural/NavLink';
+
 import { motion } from 'framer-motion';
 
 export default function NeuralCatalogPage() {
@@ -11,9 +13,9 @@ export default function NeuralCatalogPage() {
           NEURAL_ARC
         </div>
         <div className="hidden md:flex items-center gap-8 font-headline tracking-tight uppercase text-sm">
-          <a className="text-slate-400 hover:text-cyan-200 transition-colors" href="/">Storefront</a>
-          <a className="text-cyan-400 border-b-2 border-cyan-400 pb-1" href="/products">Catalog</a>
-          <a className="text-slate-400 hover:text-cyan-200 transition-colors" href="/checkout">Checkout</a>
+          <NavLink href="/">Storefront</NavLink>
+          <NavLink href="/products">Catalog</NavLink>
+          <NavLink href="/checkout">Checkout</NavLink>
         </div>
         <div className="flex items-center gap-6">
           <button className="text-slate-400 hover:text-cyan-300 transition-all duration-300 scale-95 active:scale-90">

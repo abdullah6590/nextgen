@@ -16,9 +16,6 @@ export const VisualSearch = ({ onResults }: { onResults?: (results: any[]) => vo
     setPreviewUrl(url);
     setLoading(true);
     
-    // TEMPORARY: Wait 5 seconds so you can see the cool animation!
-    await new Promise(resolve => setTimeout(resolve, 5000));
-    
     const formData = new FormData();
     formData.append('image', file);
     try {

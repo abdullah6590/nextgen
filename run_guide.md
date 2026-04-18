@@ -47,6 +47,7 @@ npx nx dev storefront:dev
 npx nx dev vendor-dashboard:dev
 ```
 
+
 Runs: Next.js Frontend applications at `http://localhost:3000` and the next available port.
 
 > **Feature Note:** The new _Neural Architect Spatial Product Deep-Dive_ is available on BOTH frontends at `/product/[id]`!

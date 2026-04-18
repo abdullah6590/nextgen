@@ -1,7 +1,12 @@
 'use client';
 
 import { ReactNode } from 'react';
+import { VendorAuthProvider } from '../lib/VendorAuthContext';
 
 export function Providers({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  return (
+    <VendorAuthProvider>
+      {children}
+    </VendorAuthProvider>
+  );
 }

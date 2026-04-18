@@ -1,7 +1,9 @@
 'use client';
 
-import React from 'react';
 import Link from 'next/link';
+import { NavLink } from './NavLink';
+
+import React from 'react';
 
 export const TopNav = () => {
   return (
@@ -9,10 +11,9 @@ export const TopNav = () => {
       <div className="flex justify-between items-center w-full px-8 py-4 max-w-[1920px] mx-auto">
         <div className="text-2xl font-black tracking-tighter text-cyan-400 font-headline uppercase">NEURAL_ARC</div>
         <div className="hidden md:flex items-center gap-8 font-headline tracking-tight uppercase text-sm">
-          <Link className="text-slate-400 hover:text-cyan-200 transition-colors" href="/">Storefront</Link>
-          <Link className="text-cyan-400 border-b-2 border-cyan-400 pb-1" href="/neural">Visual Search</Link>
-          <Link className="text-slate-400 hover:text-cyan-200 transition-colors" href="/products">Catalog</Link>
-          <Link className="text-slate-400 hover:text-cyan-200 transition-colors" href="/checkout">Checkout</Link>
+          <NavLink href="/">Storefront</NavLink>
+          <NavLink href="/products">Catalog</NavLink>
+          <NavLink href="/checkout">Checkout</NavLink>
         </div>
         <div className="flex items-center gap-6">
           <button className="text-slate-400 hover:text-cyan-400 transition-colors hover:scale-110 active:scale-90 transition-transform">
@@ -21,9 +22,9 @@ export const TopNav = () => {
           <button className="text-slate-400 hover:text-cyan-400 transition-colors hover:scale-110 active:scale-90 transition-transform">
             <span className="material-symbols-outlined">smart_toy</span>
           </button>
-          <div className="w-10 h-10 rounded-full border border-cyan-500/30 overflow-hidden">
+          <Link href="/profile" className="w-10 h-10 rounded-full border border-cyan-500/30 overflow-hidden hover:border-cyan-400 hover:scale-105 transition-all cursor-pointer block hover:shadow-[0_0_15px_rgba(76,215,246,0.3)]">
             <img alt="User Neural Profile" className="w-full h-full object-cover" data-alt="Cyberpunk style neon portrait avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsVNBaULuFPfT-b7zR-8kRQRAZsNo8hEHp010THI2oU9VyxK9G9GUGKUO-re5UNfwq9Y4A74kgdI3fGy2Ps7BG3pTtBO5MwOKHe_b3GFayJpXUIgR6IE13gmM0kV_831WmB6fJZT2nCDOXnQNfLE_CG5p5kaOZ2-qCs9UOK3qbgQJJIuFsMGzmD-lX8TZcp7Ijj6ZyUgjpZz9iKFxz0fX0VMk7vXlnOz2sEtYd7ZAtI4Ci6AOOLOtgw8PEP8vP8fWmiW6t0Mp6pfW2" />
-          </div>
+          </Link>
         </div>
       </div>
     </nav>

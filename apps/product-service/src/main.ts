@@ -2,7 +2,7 @@ import express from 'express';
 import * as path from 'path';
 import mongoose, { Schema, Document } from 'mongoose';
 import { Kafka } from 'kafkajs';
-import { authMiddleware, AuthenticatedRequest } from '../../../libs/shared/authMiddleware';
+import { authMiddleware, roleMiddleware, ROLES, AuthenticatedRequest } from '../../../libs/shared/authMiddleware';
 
 const app = express();
 app.use(express.json());
@@ -49,15 +49,28 @@ const Product = mongoose.model<IProduct>('Product', ProductSchema);
 // Kafka Producer
 const kafka = new Kafka({
   clientId: 'product-service',
-  brokers: ['localhost:9092'],
+  brokers: [process.env.KAFKA_BROKER || 'localhost:9092'],
 });
 const producer = kafka.producer();
+let kafkaReady = false;
 
 const runProducer = async () => {
   await producer.connect();
+  kafkaReady = true;
   console.log('Kafka Producer connected');
 };
-runProducer().catch(console.error);
+runProducer().catch(err => {
+  console.error('Kafka Producer failed to connect:', err.message);
+});
+
+// Internal service-to-service auth guard
+const INTERNAL_SECRET = process.env.INTERNAL_SECRET || 'internal-service-key-change-in-prod';
+function internalAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
+  if (req.headers['x-internal-secret'] !== INTERNAL_SECRET) {
+    return res.status(403).json({ error: 'Forbidden: internal endpoint' });
+  }
+  next();
+}
 
 // =============================================
 // PUBLIC ENDPOINTS (no auth required)
@@ -89,45 +102,13 @@ app.get('/', async (req, res) => {
       currentPage: Number(page),
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get Single Product
-app.get('/:id', async (req, res) => {
-  // Skip if this is an internal route (handled below)
-  if (req.params.id === 'internal') return;
-
-  try {
-    const product = await Product.findById(req.params.id);
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-
-    // Publish to Kafka (Fire & Forget)
-    if (req.query.userId) {
-      const payload = {
-        userId: req.query.userId,
-        productId: product._id,
-        timestamp: new Date().toISOString(),
-      };
-      await producer.send({
-        topic: 'product-views',
-        messages: [{ value: JSON.stringify(payload) }],
-      });
-    }
-
-    res.json(product);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Failed to fetch products' });
   }
 });
 
 // =============================================
 // PROTECTED ENDPOINTS (auth required)
 // =============================================
-
-import { roleMiddleware, ROLES } from '../../../libs/shared/authMiddleware';
 
 // Create Product (vendor/admin only)
 app.post('/',
@@ -144,29 +125,32 @@ app.post('/',
       const product = new Product(productData);
       await product.save();
 
-      // Emit product creation event
-      await producer.send({
-        topic: 'product-created',
-        messages: [{
-          value: JSON.stringify({
-            productId: product._id,
-            vendorId: product.vendorId,
-            name: product.name,
-            price: product.price,
-            category: product.category
-          })
-        }]
-      });
+      // Emit product creation event (fire-and-forget)
+      if (kafkaReady) {
+        producer.send({
+          topic: 'product-created',
+          messages: [{
+            value: JSON.stringify({
+              productId: product._id,
+              vendorId: product.vendorId,
+              name: product.name,
+              price: product.price,
+              category: product.category
+            })
+          }]
+        }).catch(err => console.error('Kafka send failed (product-created):', err.message));
+      }
 
       res.status(201).json(product);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: 'Failed to create product' });
     }
   }
 );
 
 // =============================================
 // VENDOR ENDPOINTS (protected by vendor role)
+// IMPORTANT: Must be registered BEFORE /:id to avoid route shadowing
 // =============================================
 
 // Get vendor's products
@@ -178,7 +162,7 @@ app.get('/vendor',
       const products = await Product.find({ vendorId: req.user!.userId.toString() });
       res.json(products);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: 'Failed to fetch vendor products' });
     }
   }
 );
@@ -201,18 +185,18 @@ app.patch('/vendor/:id',
 
       res.json(product);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: 'Failed to update product' });
     }
   }
 );
 
 // =============================================
 // INTERNAL SERVICE-TO-SERVICE ENDPOINTS
-// These are called by order-service, not by the frontend
+// Guarded by X-Internal-Secret header — NOT accessible from frontend
 // =============================================
 
 // Get stock info for a product
-app.get('/internal/:id/stock', async (req, res) => {
+app.get('/internal/:id/stock', internalAuth, async (req, res) => {
   try {
     const product = await Product.findById(req.params.id).select('name price stock');
     if (!product) {
@@ -225,12 +209,12 @@ app.get('/internal/:id/stock', async (req, res) => {
       stock: product.stock
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Failed to fetch stock' });
   }
 });
 
-// Decrement stock for a product
-app.patch('/internal/:id/decrement', async (req, res) => {
+// Decrement stock for a product (ATOMIC — race-condition safe)
+app.patch('/internal/:id/decrement', internalAuth, async (req, res) => {
   const { quantity } = req.body;
 
   if (!quantity || quantity <= 0) {
@@ -238,21 +222,28 @@ app.patch('/internal/:id/decrement', async (req, res) => {
   }
 
   try {
-    const product = await Product.findById(req.params.id);
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
+    // Atomic: check stock >= quantity AND decrement in a single operation.
+    // MongoDB locks the document during findOneAndUpdate, preventing
+    // two concurrent requests from both passing the stock check.
+    const product = await Product.findOneAndUpdate(
+      { _id: req.params.id, stock: { $gte: quantity } },
+      { $inc: { stock: -quantity } },
+      { new: true }
+    );
 
-    if (product.stock < quantity) {
+    if (!product) {
+      // Either product doesn't exist or stock was insufficient.
+      // Check which case it was so we can return a helpful error.
+      const exists = await Product.findById(req.params.id).select('stock name');
+      if (!exists) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
       return res.status(400).json({
         error: 'Insufficient stock',
-        available: product.stock,
+        available: exists.stock,
         requested: quantity
       });
     }
-
-    product.stock -= quantity;
-    await product.save();
 
     res.json({
       productId: product._id,
@@ -260,7 +251,66 @@ app.patch('/internal/:id/decrement', async (req, res) => {
       stock: product.stock
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Failed to decrement stock' });
+  }
+});
+
+// Rollback stock (used when partial order fails)
+app.patch('/internal/:id/rollback', internalAuth, async (req, res) => {
+  const { quantity } = req.body;
+
+  if (!quantity || quantity <= 0) {
+    return res.status(400).json({ error: 'Valid quantity is required' });
+  }
+
+  try {
+    const product = await Product.findOneAndUpdate(
+      { _id: req.params.id },
+      { $inc: { stock: quantity } },
+      { new: true }
+    );
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    res.json({
+      productId: product._id,
+      name: product.name,
+      stock: product.stock
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to rollback stock' });
+  }
+});
+
+// =============================================
+// CATCH-ALL: Get Single Product
+// MUST be LAST — /:id matches any string
+// =============================================
+app.get('/:id', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Publish to Kafka (fire-and-forget — never block the response)
+    if (req.query.userId && kafkaReady) {
+      const payload = {
+        userId: req.query.userId,
+        productId: product._id,
+        timestamp: new Date().toISOString(),
+      };
+      producer.send({
+        topic: 'product-views',
+        messages: [{ value: JSON.stringify(payload) }],
+      }).catch(err => console.error('Kafka send failed (product-views):', err.message));
+    }
+
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch product' });
   }
 });
 

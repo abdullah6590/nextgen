@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 export default function ProductDeepDivePage({ params }: { params: { id: string } }) {
   return (
@@ -21,9 +22,9 @@ export default function ProductDeepDivePage({ params }: { params: { id: string }
             <button className="text-slate-400 hover:text-cyan-400 transition-all duration-300 scale-95 active:scale-90">
               <span className="material-symbols-outlined">smart_toy</span>
             </button>
-            <div className="w-10 h-10 rounded-full border border-cyan-500/20 overflow-hidden bg-surface-container-high">
+            <Link href="/profile" className="w-10 h-10 rounded-full border border-cyan-500/20 overflow-hidden bg-surface-container-high hover:border-cyan-400 hover:scale-105 transition-all cursor-pointer block">
               <img alt="User Neural Profile" className="w-full h-full object-cover" data-alt="Cyberpunk style neon portrait of a user profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBy1PiqlAxEKDb59OF_RW385I9g3Ebmj7gFIoZJIfaeh7y735x5UTQmPwpEUK5aLODyDzLNAHL--M4Z37T2T7QCTrrigc_eKvICV_ArCt63fwTjCTwgJ4gANtZhN5nCaB3Z7lUGyDu3uRDXJtCkPxK2S5ceVZBj0vRiZtNMC_E7kCFdeQ1PIbAgugdQI1Ww5woCM0RfTTIUqUa9YMYTN1qP9LaU6GWkvYSq-QPtvwmLHxnJpBcEpvwSS39vdU6m0ssr1qxP_29Xexdl" />
-            </div>
+            </Link>
           </div>
         </div>
       </nav>

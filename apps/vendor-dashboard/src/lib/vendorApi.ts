@@ -1,9 +1,10 @@
 import axios from 'axios';
 
-const VENDOR_API_URL = process.env.NEXT_PUBLIC_VENDOR_API_URL || 'http://localhost:3002';
+// Route through the API Gateway — NOT directly to product-service
+const API_GATEWAY_URL = process.env.NEXT_PUBLIC_API_GATEWAY_URL || 'http://localhost:8080';
 
 const api = axios.create({
-    baseURL: VENDOR_API_URL,
+    baseURL: API_GATEWAY_URL,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -12,7 +13,7 @@ const api = axios.create({
 // Add authentication interceptor
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token');
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -23,29 +24,58 @@ api.interceptors.request.use(
     }
 );
 
-export const vendorApi = {
-    getProducts: async () => {
-        const response = await api.get('/vendor');
-        return response.data;
-    },
-
-    updateProduct: async (id: string, data: any) => {
-        const response = await api.patch(`/vendor/${id}`, data);
-        return response.data;
-    },
-
-    addProduct: async (data: any) => {
-        const response = await api.post('/vendor', data);
-        return response.data;
-    },
-
-    getRevenueData: async () => {
-        const response = await api.get('/vendor/revenue');
-        return response.data;
-    },
-
-    getRecentOrders: async () => {
-        const response = await api.get('/vendor/orders/recent');
-        return response.data;
+// Add response interceptor for auth errors
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            // Token expired or invalid — redirect to login
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+            }
+        }
+        return Promise.reject(error);
     }
+);
+
+export const vendorApi = {
+    // Vendor's own products — GET /products/vendor
+    getProducts: async () => {
+        const response = await api.get('/products/vendor');
+        return response.data;
+    },
+
+    // Update a vendor's product — PATCH /products/vendor/:id
+    updateProduct: async (id: string, data: any) => {
+        const response = await api.patch(`/products/vendor/${id}`, data);
+        return response.data;
+    },
+
+    // Create a new product — POST /products (vendorId added by backend from JWT)
+    addProduct: async (data: any) => {
+        const payload = {
+            name: data.name,
+            description: data.description,
+            price: data.price,
+            stock: data.stock,
+            category: data.category,
+            images: data.imageUrl ? [data.imageUrl] : [],
+            tags: data.tags || [],
+        };
+        const response = await api.post('/products', payload);
+        return response.data;
+    },
+
+    // Get vendor's orders — GET /orders/vendor/orders
+    getVendorOrders: async () => {
+        const response = await api.get('/orders/vendor/orders');
+        return response.data;
+    },
+
+    // Get single product details — GET /products/:id
+    getProduct: async (id: string) => {
+        const response = await api.get(`/products/${id}`);
+        return response.data;
+    },
 };
