@@ -5,9 +5,13 @@ import morgan from 'morgan';
 
 const app = express();
 
-// Enable CORS for the frontend dev server
+// Enable CORS for allowed frontend origins
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:3001,http://localhost:4200,http://localhost:4201').split(',');
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   if (req.method === 'OPTIONS') {
@@ -35,6 +39,7 @@ app.use('/visual-search', proxy('http://127.0.0.1:3004', { limit: '50mb', proxyR
   proxyReqOpts.timeout = 10000;
   return proxyReqOpts;
 } }));
+app.use('/recommendations', proxy('http://127.0.0.1:3005', { limit: '50mb' }));
 
 app.get('/', (req, res) => {
   res.send({ message: 'API Gateway is running' });

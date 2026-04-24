@@ -47,7 +47,6 @@ npx nx dev storefront:dev
 npx nx dev vendor-dashboard:dev
 ```
 
-
 Runs: Next.js Frontend applications at `http://localhost:3000` and the next available port.
 
 > **Feature Note:** The new _Neural Architect Spatial Product Deep-Dive_ is available on BOTH frontends at `/product/[id]`!
@@ -101,4 +100,41 @@ _You will immediately get a JSON response confirming that vectors were generated
 - Drag and drop any image into the **Visual Search** dashboard component.
 - You will see the state change to _"Analyzing Neural Patterns..."_
 - The API will query the MongoDB catalog and instantly populate your `FeaturedProduct` list with the top matches (and their scores will dynamically update based on how mathematically similar they are to the image you uploaded).
+
+After starting the services, run:
+bash
+curl -X POST http://localhost:8080/visual-search/generate-vectors
+This will populate real vectors for all your products, making visual search return meaningful similarity-based results.
+
+Build: visual-search-service ✅
+
 - **To test the threshold:** Upload a picture of something completely unrelated (like a houseplant or a sandwich). The AI will detect the similarity is below 40% (0.40) and will display the stylish _"Neural scan complete: No similar assets found in the network"_ message we just added!
+
+EMAIL VERIFICATION
+Manual Verification
+Register a new user in the Storefront. Wait to see the console log output from auth-service providing the fake email token URL.
+Attempt to log in with that user. Ensure the EMAIL_NOT_VERIFIED error is shown, along with the "Resend Verification" button.
+Click "Resend Verification" and verify the console logs a new token.
+Navigate to the /verify-email?token=... URL.
+Ensure the UI verifies the email and shows a success message.
+Go back to the login page and successfully log in.
+
+Recommendation API Endpoint (P1-11)
+
+utomated Tests
+Run npx nx run api-gateway:build and npx nx run recommendation-service:build.
+Manual Verification
+Start the services.
+Call http://localhost:8080/recommendations via browser or curl.
+Verify it returns the dummy recommendations successfully.
+
+⚠️ Important Note Before Running
+Because Docker is currently offline on your machine (docker API permission denied), I couldn't push the new Prisma schema to your PostgreSQL container automatically.
+
+Before you start testing this, please run:
+
+bash
+docker-compose up -d eshop-postgres
+cd apps/recommendation-service
+npx prisma db push
+(The TypeScript client itself is already generated and compiling cleanly!)

@@ -7,7 +7,7 @@ import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
-import { authMiddleware, AuthenticatedRequest } from '../../../libs/shared/authMiddleware';
+import { authMiddleware, AuthenticatedRequest, validate, registerSchema, loginSchema } from '@nextgen/shared';
 
 const app = express();
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -23,8 +23,9 @@ app.use(express.json());
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 // Register
-app.post('/register', async (req, res) => {
+app.post('/register', validate(registerSchema), async (req, res) => {
   const { email, password, role } = req.body;
+
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -60,7 +61,7 @@ app.post('/register', async (req, res) => {
 });
 
 // Login
-app.post('/login', async (req, res) => {
+app.post('/login', validate(loginSchema), async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await prisma.user.findUnique({ where: { email } });
@@ -336,11 +337,20 @@ app.get('/profile', authMiddleware as any, async (req: AuthenticatedRequest, res
   try {
     const userId = req.userId;
 
-    const profile = await prisma.profile.findUnique({
-      where: { userId }
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { profile: true }
     });
 
-    res.json(profile || {});
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({
+      ...(user.profile || {}),
+      email: user.email,
+      twoFactorEnabled: user.twoFactorEnabled
+    });
   } catch (error) {
     console.error('Get profile error:', error);
     res.status(500).json({ message: 'Internal server error' });

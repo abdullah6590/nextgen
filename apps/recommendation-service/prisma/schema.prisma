@@ -13,3 +13,12 @@ model ProductView {
   productId String
   timestamp DateTime @default(now())
 }
+
+model ProductPurchase {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  price     Float
+  quantity  Int
+  timestamp DateTime @default(now())
+}

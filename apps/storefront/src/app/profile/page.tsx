@@ -2,9 +2,10 @@
 
 import { NavLink } from '../../components/neural/NavLink';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import api from '../../lib/api';
 
 const MOCK_ASSETS = [
   { id: 1, name: 'Iridescent Mesh Kit', type: 'Material', match: '99.4%', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC0kL0OVc4DTI5hZ1_sYW3t4MxQrpudSwaD79qPf8w16b0gibEsdps4OaLyZEFW2eG5PjkjOjjAU8hKCvhFPo9lC77gQzEg0jOeKEFUuR3oUe7NASDiKZgRhcVU5q1TH2tgcbVU1kf_CayrCWEwEWxaXLOVpchGKMGhnC5kiiubSfvqi6GpMlHymLu9ufHq1FJVW5ewSBGsqoANc7DTaaLEx_eoyQCqDc1Kan0i87b9bc0lNfn6mrgBymgvaQzcRw62UqS_PgEjr5Zm' },
@@ -20,6 +21,68 @@ const MOCK_ORDERS = [
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('vault');
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  // 2FA state
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
+  const [totpCode, setTotpCode] = useState('');
+  const [twoFactorMessage, setTwoFactorMessage] = useState({ type: '', text: '' });
+  const [isSettingUp, setIsSettingUp] = useState(false);
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const response = await api.get('/auth/profile');
+      setProfile(response.data);
+      setTwoFactorEnabled(response.data.twoFactorEnabled || false);
+    } catch (err) {
+      console.error('Failed to load profile', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEnable2FA = async () => {
+    setTwoFactorMessage({ type: '', text: '' });
+    try {
+      const response = await api.post('/auth/2fa/setup');
+      setQrCodeDataUrl(response.data.qrCodeDataUrl);
+      setIsSettingUp(true);
+    } catch (err: any) {
+      setTwoFactorMessage({ type: 'error', text: err.response?.data?.message || 'Failed to initiate 2FA setup' });
+    }
+  };
+
+  const handleVerify2FA = async () => {
+    setTwoFactorMessage({ type: '', text: '' });
+    try {
+      await api.post('/auth/2fa/verify', { token: totpCode });
+      setTwoFactorEnabled(true);
+      setIsSettingUp(false);
+      setTotpCode('');
+      setQrCodeDataUrl('');
+      setTwoFactorMessage({ type: 'success', text: 'Two-Factor Authentication successfully enabled.' });
+    } catch (err: any) {
+      setTwoFactorMessage({ type: 'error', text: err.response?.data?.message || 'Invalid verification code.' });
+    }
+  };
+
+  const handleDisable2FA = async () => {
+    setTwoFactorMessage({ type: '', text: '' });
+    try {
+      await api.post('/auth/2fa/disable', { token: totpCode });
+      setTwoFactorEnabled(false);
+      setTotpCode('');
+      setTwoFactorMessage({ type: 'success', text: 'Two-Factor Authentication has been disabled.' });
+    } catch (err: any) {
+      setTwoFactorMessage({ type: 'error', text: err.response?.data?.message || 'Invalid code or failed to disable 2FA.' });
+    }
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -257,6 +320,113 @@ export default function ProfilePage() {
                                <div className="w-4 h-4 rounded-full bg-slate-500 absolute left-1"></div>
                              </div>
                            </div>
+                         </div>
+                       </section>
+
+                       <section>
+                         <h3 className="font-headline text-lg text-[#4cd7f6] uppercase tracking-wider mb-4 border-l-2 border-[#4cd7f6] pl-3">Identity Security</h3>
+                         <div className="p-6 bg-[#131315]/80 border border-[#3d494c]/30 rounded-lg">
+                           <div className="flex items-start justify-between mb-6">
+                             <div>
+                               <h4 className="font-bold text-white uppercase tracking-tight flex items-center gap-2">
+                                 Two-Factor Authentication (2FA)
+                                 {twoFactorEnabled ? (
+                                   <span className="text-[10px] px-2 py-0.5 rounded bg-green-500/20 text-green-400 border border-green-500/30">ENABLED</span>
+                                 ) : (
+                                   <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">DISABLED</span>
+                                 )}
+                               </h4>
+                               <p className="text-sm text-slate-400 mt-2 max-w-md">
+                                 Add an extra layer of security to your neural profile. When enabled, you'll need to enter a time-sensitive code from your authenticator device during login.
+                               </p>
+                             </div>
+                             <div>
+                               {twoFactorEnabled ? (
+                                 <div className="flex items-center gap-3">
+                                   {isSettingUp ? (
+                                     <div className="flex items-center gap-2">
+                                       <input
+                                         type="text"
+                                         value={totpCode}
+                                         onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ''))}
+                                         placeholder="000000"
+                                         className="w-24 bg-[#0e0e10] border border-slate-700 rounded p-2 text-white text-center font-mono focus:border-[#4cd7f6] outline-none"
+                                         maxLength={6}
+                                       />
+                                       <button onClick={handleDisable2FA} className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/50 rounded transition-colors text-xs font-bold uppercase tracking-wider">
+                                         Confirm Disable
+                                       </button>
+                                       <button onClick={() => { setIsSettingUp(false); setTotpCode(''); setTwoFactorMessage({type:'',text:''}); }} className="px-4 py-2 text-slate-400 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider">
+                                         Cancel
+                                       </button>
+                                     </div>
+                                   ) : (
+                                     <button onClick={() => setIsSettingUp(true)} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded transition-colors text-xs font-bold uppercase tracking-wider">
+                                       Disable 2FA
+                                     </button>
+                                   )}
+                                 </div>
+                               ) : (
+                                 !isSettingUp && (
+                                   <button onClick={handleEnable2FA} className="px-4 py-2 bg-[#4cd7f6]/20 hover:bg-[#4cd7f6]/30 text-[#4cd7f6] border border-[#4cd7f6]/50 rounded transition-colors text-xs font-bold uppercase tracking-wider">
+                                     Enable 2FA
+                                   </button>
+                                 )
+                               )}
+                             </div>
+                           </div>
+
+                           {twoFactorMessage.text && (
+                             <div className={`p-3 mb-6 rounded text-sm font-bold uppercase tracking-widest text-center border ${
+                               twoFactorMessage.type === 'success' ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-red-500/10 text-red-400 border-red-500/30'
+                             }`}>
+                               {twoFactorMessage.text}
+                             </div>
+                           )}
+
+                           <AnimatePresence>
+                             {isSettingUp && !twoFactorEnabled && qrCodeDataUrl && (
+                               <motion.div
+                                 initial={{ opacity: 0, height: 0 }}
+                                 animate={{ opacity: 1, height: 'auto' }}
+                                 exit={{ opacity: 0, height: 0 }}
+                                 className="border-t border-[#3d494c]/30 pt-6 mt-6 flex flex-col items-center"
+                               >
+                                 <h5 className="text-[#bcc9cd] text-xs font-bold uppercase tracking-widest mb-4">1. Scan QR Code</h5>
+                                 <div className="bg-white p-2 rounded-lg mb-6 shadow-[0_0_20px_rgba(76,215,246,0.2)]">
+                                   <img src={qrCodeDataUrl} alt="2FA QR Code" className="w-40 h-40" />
+                                 </div>
+                                 
+                                 <h5 className="text-[#bcc9cd] text-xs font-bold uppercase tracking-widest mb-4">2. Enter Verification Code</h5>
+                                 <div className="flex gap-4 w-full max-w-xs">
+                                   <input
+                                     type="text"
+                                     value={totpCode}
+                                     onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ''))}
+                                     placeholder="000000"
+                                     className="flex-1 bg-[#0e0e10] border border-[#4cd7f6]/30 rounded p-3 text-white text-center font-mono text-xl focus:border-[#4cd7f6] focus:shadow-[0_0_10px_rgba(76,215,246,0.2)] outline-none transition-all"
+                                     maxLength={6}
+                                   />
+                                 </div>
+                                 
+                                 <div className="flex gap-3 mt-6">
+                                   <button 
+                                     onClick={() => { setIsSettingUp(false); setQrCodeDataUrl(''); setTotpCode(''); setTwoFactorMessage({type:'',text:''}); }}
+                                     className="px-6 py-2 border border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800 rounded uppercase tracking-wider text-xs font-bold transition-colors"
+                                   >
+                                     Cancel
+                                   </button>
+                                   <button 
+                                     onClick={handleVerify2FA}
+                                     disabled={totpCode.length !== 6}
+                                     className="px-6 py-2 bg-[#4cd7f6] text-[#003640] rounded uppercase tracking-wider text-xs font-bold hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                   >
+                                     Verify & Enable
+                                   </button>
+                                 </div>
+                               </motion.div>
+                             )}
+                           </AnimatePresence>
                          </div>
                        </section>
 

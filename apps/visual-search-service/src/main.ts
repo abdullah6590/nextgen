@@ -4,6 +4,7 @@ import multer from 'multer';
 import mongoose, { Schema, Document } from 'mongoose';
 import * as tf from '@tensorflow/tfjs-node';
 import * as mobilenet from '@tensorflow-models/mobilenet';
+import axios from 'axios';
 
 // MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/eshop_products';
@@ -67,33 +68,207 @@ function cosineSimilarity(vecA: number[], vecB: number[]): number {
   return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
-// Warm-up endpoint
+/**
+ * Download an image from a URL and return the raw Buffer.
+ * Handles HTTP/HTTPS URLs. Returns null on failure.
+ */
+async function downloadImage(imageUrl: string): Promise<Buffer | null> {
+  try {
+    const response = await axios.get(imageUrl, {
+      responseType: 'arraybuffer',
+      timeout: 15000, // 15 second timeout per image
+      headers: {
+        'User-Agent': 'NeuralCart-VisualSearch/1.0',
+      },
+    });
+    return Buffer.from(response.data);
+  } catch (error: any) {
+    console.warn(`  ⚠ Failed to download image: ${imageUrl.substring(0, 80)}... (${error.message})`);
+    return null;
+  }
+}
+
+/**
+ * Extract a 1024-dimension feature vector from an image buffer using MobileNet v2.
+ * Returns null if extraction fails (corrupt image, wrong format, etc.).
+ */
+async function extractFeatureVector(imageBuffer: Buffer): Promise<number[] | null> {
+  let tensor: any = null;
+  let embeddings: any = null;
+
+  try {
+    // Decode the image to a 3-channel tensor (RGB)
+    tensor = (tf as any).node.decodeImage(imageBuffer, 3);
+
+    // model.infer with second arg `true` returns the penultimate layer embeddings [1, 1024]
+    embeddings = model.infer(tensor, true) as any;
+    const featureVector = Array.from((await embeddings.data()) as Float32Array);
+
+    return featureVector;
+  } catch (error: any) {
+    console.warn(`  ⚠ Feature extraction failed: ${error.message}`);
+    return null;
+  } finally {
+    // Always dispose tensors to prevent memory leaks
+    if (tensor) tensor.dispose();
+    if (embeddings) embeddings.dispose();
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────
+// POST /generate-vectors — Real image extraction pipeline
+// Downloads each product's first image, extracts MobileNet features,
+// and stores the 1024-d vector in MongoDB.
+// Query params:
+//   ?force=true — re-generate vectors for ALL products (not just missing)
+// ──────────────────────────────────────────────────────────────────
 app.post('/generate-vectors', async (req, res) => {
   if (!model) {
     return res.status(503).json({ error: 'Model is still loading. Please try again in a moment.' });
   }
 
+  const forceRegenerate = req.query.force === 'true';
+
   try {
-    const products = await Product.find({ featureVector: { $exists: false } });
+    // Find products that need vector generation
+    const query = forceRegenerate
+      ? {} // All products
+      : { $or: [
+          { featureVector: { $exists: false } },
+          { featureVector: { $size: 0 } },
+        ]};
+
+    const products = await Product.find(query).select('+featureVector');
+
     if (products.length === 0) {
-      return res.json({ message: 'All products already have feature vectors.' });
+      return res.json({
+        message: 'All products already have feature vectors.',
+        hint: 'Use ?force=true to regenerate all vectors.',
+      });
     }
 
-    console.log(`Generating vectors for ${products.length} products...`);
-    
-    // Using a random noise vector for existing products since we don't have their actual image buffers here easily.
-    // In a real scenario, we'd fetch the image from URL or storage and pass it to TFJS.
+    console.log(`\n🧠 Generating real feature vectors for ${products.length} products...`);
+
+    let success = 0;
+    let skipped = 0;
+    let failed = 0;
+    const errors: string[] = [];
+
     for (const product of products) {
-      // MobileNet v2 features are 1024-dimension vectors
-      const dummyVec = Array.from({length: 1024}, () => Math.random());
-      product.featureVector = dummyVec;
+      const imageUrl = product.images?.[0];
+      if (!imageUrl) {
+        console.log(`  ⏭ ${product.name}: No image URL — skipping`);
+        skipped++;
+        continue;
+      }
+
+      console.log(`  📷 Processing: ${product.name}...`);
+
+      // Step 1: Download the image
+      const imageBuffer = await downloadImage(imageUrl);
+      if (!imageBuffer) {
+        failed++;
+        errors.push(`${product.name}: Download failed`);
+        continue;
+      }
+
+      // Step 2: Extract feature vector using MobileNet
+      const featureVector = await extractFeatureVector(imageBuffer);
+      if (!featureVector) {
+        failed++;
+        errors.push(`${product.name}: Feature extraction failed`);
+        continue;
+      }
+
+      // Step 3: Store the vector in MongoDB
+      product.featureVector = featureVector;
       await product.save();
+      success++;
+      console.log(`  ✅ ${product.name}: Vector generated (${featureVector.length}d)`);
     }
-    
-    res.json({ message: `Successfully generated vectors for ${products.length} products.` });
+
+    console.log(`\n📊 Vector generation complete: ${success} success, ${skipped} skipped, ${failed} failed\n`);
+
+    res.json({
+      message: `Feature vector generation complete.`,
+      total: products.length,
+      success,
+      skipped,
+      failed,
+      errors: errors.length > 0 ? errors : undefined,
+    });
   } catch (error) {
-    console.error('Error in warm-up script:', error);
+    console.error('Error in vector generation:', error);
     res.status(500).json({ error: 'Failed to generate vectors.' });
+  }
+});
+
+// ──────────────────────────────────────────────────────────────────
+// POST /generate-vector/:id — Generate vector for a single product
+// Called by product-service when a new product is created/updated.
+// ──────────────────────────────────────────────────────────────────
+app.post('/generate-vector/:id', async (req, res) => {
+  if (!model) {
+    return res.status(503).json({ error: 'Model is still loading.' });
+  }
+
+  try {
+    const product = await Product.findById(req.params.id).select('+featureVector');
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found.' });
+    }
+
+    const imageUrl = product.images?.[0];
+    if (!imageUrl) {
+      return res.status(400).json({ error: 'Product has no images.' });
+    }
+
+    console.log(`🧠 Generating vector for: ${product.name}...`);
+
+    const imageBuffer = await downloadImage(imageUrl);
+    if (!imageBuffer) {
+      return res.status(422).json({ error: 'Failed to download product image.' });
+    }
+
+    const featureVector = await extractFeatureVector(imageBuffer);
+    if (!featureVector) {
+      return res.status(422).json({ error: 'Failed to extract features from image.' });
+    }
+
+    product.featureVector = featureVector;
+    await product.save();
+
+    console.log(`✅ ${product.name}: Vector generated (${featureVector.length}d)`);
+    res.json({ message: 'Feature vector generated.', dimensions: featureVector.length });
+  } catch (error: any) {
+    console.error('Single vector generation error:', error);
+    res.status(500).json({ error: error.message || 'Internal Server Error' });
+  }
+});
+
+// ──────────────────────────────────────────────────────────────────
+// GET /status — Check service health, model status, and vector coverage
+// ──────────────────────────────────────────────────────────────────
+app.get('/status', async (req, res) => {
+  try {
+    const totalProducts = await Product.countDocuments();
+    const withVectors = await Product.countDocuments({
+      featureVector: { $exists: true, $not: { $size: 0 } },
+    });
+
+    res.json({
+      service: 'visual-search-service',
+      modelLoaded: !!model,
+      modelVersion: 'MobileNet v2 (alpha 1.0)',
+      vectorDimensions: 1024,
+      products: {
+        total: totalProducts,
+        withVectors,
+        coverage: totalProducts > 0 ? `${((withVectors / totalProducts) * 100).toFixed(1)}%` : '0%',
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get status.' });
   }
 });
 
@@ -108,16 +283,11 @@ app.post('/', upload.single('image'), async (req: any, res) => {
   }
 
   try {
-    // 1. Decode Image and Extract Feature Vector
-    const tensor = (tf as any).node.decodeImage(req.file.buffer, 3);
-    
-    // model.infer returns a 2D tensor [1, 1024]. Squeeze it to a 1D array.
-    const embeddings = model.infer(tensor, true) as any;
-    const featureVector = Array.from((await embeddings.data()) as Float32Array);
-    
-    // Dispose tensors to free memory
-    tensor.dispose();
-    embeddings.dispose();
+    // 1. Extract feature vector from uploaded image
+    const featureVector = await extractFeatureVector(req.file.buffer);
+    if (!featureVector) {
+      return res.status(422).json({ error: 'Failed to extract features from the uploaded image.' });
+    }
 
     // 2. Query MongoDB for products with feature vectors
     // Using select('+featureVector') because we set select: false in schema

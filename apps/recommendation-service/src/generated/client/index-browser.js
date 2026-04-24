@@ -127,6 +127,15 @@ exports.Prisma.ProductViewScalarFieldEnum = {
   timestamp: 'timestamp'
 };
 
+exports.Prisma.ProductPurchaseScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  productId: 'productId',
+  price: 'price',
+  quantity: 'quantity',
+  timestamp: 'timestamp'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -139,7 +148,8 @@ exports.Prisma.QueryMode = {
 
 
 exports.Prisma.ModelName = {
-  ProductView: 'ProductView'
+  ProductView: 'ProductView',
+  ProductPurchase: 'ProductPurchase'
 };
 
 /**

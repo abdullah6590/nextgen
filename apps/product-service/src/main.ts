@@ -2,7 +2,7 @@ import express from 'express';
 import * as path from 'path';
 import mongoose, { Schema, Document } from 'mongoose';
 import { Kafka } from 'kafkajs';
-import { authMiddleware, roleMiddleware, ROLES, AuthenticatedRequest } from '../../../libs/shared/authMiddleware';
+import { authMiddleware, roleMiddleware, ROLES, AuthenticatedRequest, validate, createProductSchema } from '@nextgen/shared';
 
 const app = express();
 app.use(express.json());
@@ -26,6 +26,7 @@ interface IProduct extends Document {
   tags: string[];
   featureVector?: number[];
   createdAt: Date;
+  isDeleted: boolean;
 }
 
 const ProductSchema: Schema = new Schema({
@@ -39,6 +40,7 @@ const ProductSchema: Schema = new Schema({
   tags: [{ type: String }],
   featureVector: { type: [Number], select: false },
   createdAt: { type: Date, default: Date.now },
+  isDeleted: { type: Boolean, default: false },
 });
 
 // Text index for search
@@ -87,6 +89,8 @@ app.get('/', async (req, res) => {
   if (category) {
     query.category = category;
   }
+  
+  query.isDeleted = false;
 
   try {
     const products = await Product.find(query)
@@ -114,6 +118,7 @@ app.get('/', async (req, res) => {
 app.post('/',
   authMiddleware as any,
   roleMiddleware([ROLES.VENDOR, ROLES.ADMIN]),
+  validate(createProductSchema) as any,
   async (req: AuthenticatedRequest, res) => {
     try {
       // Add vendorId from authenticated user
@@ -159,7 +164,7 @@ app.get('/vendor',
   roleMiddleware([ROLES.VENDOR, ROLES.ADMIN]),
   async (req: AuthenticatedRequest, res) => {
     try {
-      const products = await Product.find({ vendorId: req.user!.userId.toString() });
+      const products = await Product.find({ vendorId: req.user!.userId.toString(), isDeleted: false });
       res.json(products);
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch vendor products' });
@@ -186,6 +191,42 @@ app.patch('/vendor/:id',
       res.json(product);
     } catch (error) {
       res.status(500).json({ error: 'Failed to update product' });
+    }
+  }
+);
+
+// Delete vendor's product (soft-delete)
+app.delete('/vendor/:id',
+  authMiddleware as any,
+  roleMiddleware([ROLES.VENDOR, ROLES.ADMIN]),
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      const product = await Product.findOneAndUpdate(
+        { _id: req.params.id, vendorId: req.user!.userId.toString(), isDeleted: false },
+        { isDeleted: true },
+        { new: true }
+      );
+
+      if (!product) {
+        return res.status(404).json({ error: 'Product not found or not owned by vendor' });
+      }
+
+      // Emit product-deleted event so recommendation-service and others can scrub references
+      if (kafkaReady) {
+        producer.send({
+          topic: 'product-deleted',
+          messages: [{
+            value: JSON.stringify({
+              productId: product._id,
+              vendorId: product.vendorId
+            })
+          }]
+        }).catch(err => console.error('Kafka send failed (product-deleted):', err.message));
+      }
+
+      res.json({ message: 'Product successfully deleted' });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to delete product' });
     }
   }
 );
@@ -290,7 +331,7 @@ app.patch('/internal/:id/rollback', internalAuth, async (req, res) => {
 // =============================================
 app.get('/:id', async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findOne({ _id: req.params.id, isDeleted: false });
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }

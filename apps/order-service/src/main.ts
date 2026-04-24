@@ -5,7 +5,7 @@ import { Kafka } from 'kafkajs';
 import { PrismaClient } from './generated/client/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
-import { authMiddleware, roleMiddleware, ROLES, AuthenticatedRequest } from '../../../libs/shared/authMiddleware';
+import { authMiddleware, roleMiddleware, ROLES, AuthenticatedRequest, validate, createOrderSchema } from '@nextgen/shared';
 
 const app = express();
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -33,13 +33,9 @@ app.use('/assets', express.static(path.join(__dirname, 'assets')));
 // =============================================
 
 // POST /orders - Create Order
-app.post('/', authMiddleware as any, async (req: AuthenticatedRequest, res) => {
+app.post('/', authMiddleware as any, validate(createOrderSchema) as any, async (req: AuthenticatedRequest, res) => {
   const { items } = req.body;
   const userId = req.user!.userId.toString();
-
-  if (!items || !Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ error: 'Cart is empty' });
-  }
 
   try {
     // Atomic stock decrement — each call checks stock >= quantity AND decrements

@@ -18,9 +18,28 @@ export default function VendorLoginPage() {
   const router = useRouter();
   const { login } = useVendorAuth();
 
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
+
+  const handleResendVerification = async () => {
+    setLoading(true);
+    setError('');
+    setSuccessMsg('');
+    try {
+      await axios.post(`${API_GATEWAY_URL}/auth/send-verification`, { email });
+      setSuccessMsg('Verification email sent successfully.');
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to resend verification.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccessMsg('');
+    setNeedsVerification(false);
     setLoading(true);
 
     try {
@@ -41,6 +60,9 @@ export default function VendorLoginPage() {
       login(data.token);
       router.push('/');
     } catch (err: any) {
+      if (err.response?.data?.code === 'EMAIL_NOT_VERIFIED') {
+        setNeedsVerification(true);
+      }
       setError(err.response?.data?.error || err.response?.data?.message || 'Authentication failed.');
     } finally {
       setLoading(false);
@@ -145,6 +167,20 @@ export default function VendorLoginPage() {
             {error && (
               <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-[#ef4444]/10 border border-[#ef4444]/30 text-[#ef4444] text-xs uppercase tracking-widest px-4 py-3 rounded-[12px] text-center font-bold">
                 {error}
+                {needsVerification && (
+                  <button 
+                    type="button" 
+                    onClick={handleResendVerification}
+                    className="block w-full mt-3 py-2 bg-[#ef4444]/20 hover:bg-[#ef4444]/30 text-[#ef4444] rounded-[8px] transition-colors font-headline"
+                  >
+                    RESEND VERIFICATION EMAIL
+                  </button>
+                )}
+              </motion.div>
+            )}
+            {successMsg && (
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-green-500/10 border border-green-500/30 text-green-400 text-xs uppercase tracking-widest px-4 py-3 rounded-[12px] text-center font-bold">
+                {successMsg}
               </motion.div>
             )}
 
