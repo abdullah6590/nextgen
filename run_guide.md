@@ -41,10 +41,16 @@ PowerShell -ExecutionPolicy Bypass -Command "npx nx run storefront:dev"
 
 ```bash
 # Run the public Storefront
-npx nx dev storefront:dev
+npx nx dev storefront
+# or
+npx nx run storefront:dev
+
 
 # Run the Vendor Dashboard (in a separate terminal)
-npx nx dev vendor-dashboard:dev
+npx nx dev vendor-dashboard
+# or
+npx nx run vendor-dashboard:dev
+
 ```
 
 Runs: Next.js Frontend applications at `http://localhost:3000` and the next available port.

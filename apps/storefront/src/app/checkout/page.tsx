@@ -7,7 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import api from '../../lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { NavLink } from '../../components/neural/NavLink';
+import { TopNav } from '../../components/neural/TopNav';
 
 export default function CheckoutPage() {
   const { items, totalPrice, clearCart, updateQuantity, removeFromCart } = useCart();
@@ -24,6 +24,7 @@ export default function CheckoutPage() {
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
   const [sectorCode, setSectorCode] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('stripe');
 
   const handlePlaceOrder = async () => {
     if (!isAuthenticated) {
@@ -43,6 +44,8 @@ export default function CheckoutPage() {
           quantity: item.quantity,
           price: item.price,
         })),
+        paymentMethod,
+        shippingAddress: { name, email, address, sectorCode }
       };
 
       const { data } = await api.post('/orders', orderPayload);
@@ -93,24 +96,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="bg-surface-container-lowest text-on-surface font-body selection:bg-primary selection:text-on-primary min-h-screen">
-      {/* TopNavBar */}
-      <nav className="fixed top-0 w-full z-50 bg-[#131315]/15 backdrop-blur-xl border-b border-cyan-500/10 shadow-[0_8px_32px_0_rgba(6,182,212,0.08)] flex justify-between items-center px-8 py-4 max-w-none">
-        <div className="text-xl font-bold tracking-widest text-cyan-400 font-headline uppercase">
-          NEURAL_ARCHITECT
-        </div>
-        <div className="hidden md:flex items-center gap-8 font-headline tracking-tight uppercase text-sm">
-          <NavLink href="/">Storefront</NavLink>
-          <NavLink href="/products">Catalog</NavLink>
-          <NavLink href="/checkout">Checkout</NavLink>
-        </div>
-        <div className="flex items-center space-x-6">
-          <span className="material-symbols-outlined text-slate-400 cursor-pointer hover:text-cyan-400 transition-all duration-300">help_outline</span>
-          <span className="material-symbols-outlined text-slate-400 cursor-pointer hover:text-cyan-400 transition-all duration-300">lock_person</span>
-          <Link href="/profile" className="w-10 h-10 rounded-full border border-primary/20 p-0.5 overflow-hidden hover:border-primary/50 hover:scale-105 transition-all cursor-pointer block">
-            <img className="w-full h-full object-cover rounded-full" alt="User profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuki7s68oSjwqPSgkmWBYO-Cpu2ls13HbINsPVMU61X352UTpayjhVBFppQCKVxtHTy914ojJ5EtREwIJADk107lSJsoeQCeOpXwkz38OutWgmJpYn2yA1TShitcxC5nT0KtATs8jCI2PlH0xYzT7o6lAZgXTb3dqIXaiysK91x4tYTt7DBOX7FZrMMZ_NfTLXMk3CTvQJjnpgr-ZaXTbMECpMZZ4s8oHTIRIWn_aiapOb7vbjXGrI-YNBzNFU4o_0h8Dt7d3K6E8l" />
-          </Link>
-        </div>
-      </nav>
+      <TopNav />
 
       <main className="pt-24 pb-32 px-4 md:px-8 max-w-[1600px] mx-auto">
         <header className="mb-12">
@@ -279,26 +265,80 @@ export default function CheckoutPage() {
                 </div>
                 <div className="grid grid-cols-1 gap-4">
                   <label className="relative group cursor-pointer">
-                    <input defaultChecked className="peer hidden" name="payment" type="radio" value="crypto" />
+                    <input 
+                      className="peer hidden" 
+                      name="payment" 
+                      type="radio" 
+                      value="stripe" 
+                      checked={paymentMethod === 'stripe'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                    />
                     <div className="flex items-center justify-between p-4 rounded-md border border-outline-variant/20 bg-surface-container-low peer-checked:border-primary peer-checked:bg-primary/5 transition-all">
                       <div className="flex items-center gap-4">
-                        <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors">currency_bitcoin</span>
+                        <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors">credit_card</span>
                         <div>
-                          <p className="font-headline text-sm font-bold uppercase tracking-tight">Crypto Cluster</p>
-                          <p className="text-[10px] text-outline">ETH / SOL / BTC</p>
+                          <p className="font-headline text-sm font-bold uppercase tracking-tight">Stripe</p>
+                          <p className="text-[10px] text-outline">Credit / Debit Cards</p>
                         </div>
                       </div>
                     </div>
                   </label>
 
                   <label className="relative group cursor-pointer">
-                    <input className="peer hidden" name="payment" type="radio" value="fiat" />
-                    <div className="flex items-center justify-between p-4 rounded-md border border-outline-variant/20 bg-surface-container-low peer-checked:border-on-surface peer-checked:bg-on-surface/5 transition-all">
+                    <input 
+                      className="peer hidden" 
+                      name="payment" 
+                      type="radio" 
+                      value="paypal"
+                      checked={paymentMethod === 'paypal'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                    />
+                    <div className="flex items-center justify-between p-4 rounded-md border border-outline-variant/20 bg-surface-container-low peer-checked:border-[#0070ba] peer-checked:bg-[#0070ba]/5 transition-all">
                       <div className="flex items-center gap-4">
-                        <span className="material-symbols-outlined text-outline group-hover:text-on-surface transition-colors">credit_card</span>
+                        <span className="material-symbols-outlined text-outline group-hover:text-[#0070ba] transition-colors">account_balance_wallet</span>
                         <div>
-                          <p className="font-headline text-sm font-bold uppercase tracking-tight">Standard Payment</p>
-                          <p className="text-[10px] text-outline">Legacy Fiat Cards</p>
+                          <p className="font-headline text-sm font-bold uppercase tracking-tight">PayPal</p>
+                          <p className="text-[10px] text-outline">Fast & Secure</p>
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+
+                  <label className="relative group cursor-pointer">
+                    <input 
+                      className="peer hidden" 
+                      name="payment" 
+                      type="radio" 
+                      value="bank"
+                      checked={paymentMethod === 'bank'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                    />
+                    <div className="flex items-center justify-between p-4 rounded-md border border-outline-variant/20 bg-surface-container-low peer-checked:border-tertiary peer-checked:bg-tertiary/5 transition-all">
+                      <div className="flex items-center gap-4">
+                        <span className="material-symbols-outlined text-outline group-hover:text-tertiary transition-colors">account_balance</span>
+                        <div>
+                          <p className="font-headline text-sm font-bold uppercase tracking-tight">Bank Transfer</p>
+                          <p className="text-[10px] text-outline">Direct Wire</p>
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+
+                  <label className="relative group cursor-pointer">
+                    <input 
+                      className="peer hidden" 
+                      name="payment" 
+                      type="radio" 
+                      value="cod"
+                      checked={paymentMethod === 'cod'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                    />
+                    <div className="flex items-center justify-between p-4 rounded-md border border-outline-variant/20 bg-surface-container-low peer-checked:border-secondary peer-checked:bg-secondary/5 transition-all">
+                      <div className="flex items-center gap-4">
+                        <span className="material-symbols-outlined text-outline group-hover:text-secondary transition-colors">local_shipping</span>
+                        <div>
+                          <p className="font-headline text-sm font-bold uppercase tracking-tight">Cash on Delivery</p>
+                          <p className="text-[10px] text-outline">Pay at Destination</p>
                         </div>
                       </div>
                     </div>

@@ -10,6 +10,7 @@ import { PopularVendors } from '../components/neural/PopularVendors';
 import { FeaturedProduct } from '../components/neural/FeaturedProduct';
 import { SystemMetrics } from '../components/neural/SystemMetrics';
 import { Footer } from '../components/neural/Footer';
+import { Chatbot } from '../components/neural/Chatbot';
 
 export default function StorefrontHomePage() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -77,6 +78,8 @@ export default function StorefrontHomePage() {
         </div>
       </main>
       
+      {/* AI Chatbot */}
+      <Chatbot />
       <Footer />
     </div>
   );

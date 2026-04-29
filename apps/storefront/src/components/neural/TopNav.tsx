@@ -2,10 +2,13 @@
 
 import Link from 'next/link';
 import { NavLink } from './NavLink';
+import { useCart } from '../../contexts/CartContext';
 
 import React from 'react';
 
 export const TopNav = () => {
+  const { totalItems, setCartOpen } = useCart();
+
   return (
     <nav className="fixed top-0 w-full z-50 bg-[#131315]/15 backdrop-blur-xl border-b border-cyan-500/10 shadow-[0_8px_32px_0_rgba(76,215,246,0.08)]">
       <div className="flex justify-between items-center w-full px-8 py-4 max-w-[1920px] mx-auto">
@@ -16,8 +19,16 @@ export const TopNav = () => {
           <NavLink href="/checkout">Checkout</NavLink>
         </div>
         <div className="flex items-center gap-6">
-          <button className="text-slate-400 hover:text-cyan-400 transition-colors hover:scale-110 active:scale-90 transition-transform">
+          <button 
+            onClick={() => setCartOpen(true)}
+            className="text-slate-400 hover:text-cyan-400 transition-colors hover:scale-110 active:scale-90 transition-transform relative"
+          >
             <span className="material-symbols-outlined">shopping_cart</span>
+            {totalItems > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+                {totalItems}
+              </span>
+            )}
           </button>
           <button className="text-slate-400 hover:text-cyan-400 transition-colors hover:scale-110 active:scale-90 transition-transform">
             <span className="material-symbols-outlined">smart_toy</span>
