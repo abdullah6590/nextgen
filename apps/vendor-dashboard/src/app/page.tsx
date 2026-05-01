@@ -50,6 +50,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showAddProduct, setShowAddProduct] = useState(false);
+  const [editProduct, setEditProduct] = useState<Product | null>(null);
 
   // Auth guard — redirect to login if not authenticated
   useEffect(() => {
@@ -94,7 +95,23 @@ export default function DashboardPage() {
 
   const handleProductAdded = () => {
     setShowAddProduct(false);
+    setEditProduct(null);
     fetchData(); // Refresh data
+  };
+
+  const handleEditProduct = (product: Product) => {
+    setEditProduct(product);
+    setShowAddProduct(true);
+  };
+
+  const handleDeleteProduct = async (product: Product) => {
+    if (!confirm(`Are you sure you want to delete "${product.name}"? This action cannot be undone.`)) return;
+    try {
+      await vendorApi.deleteProduct(product._id);
+      fetchData();
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to delete product');
+    }
   };
 
   return (
@@ -265,12 +282,11 @@ export default function DashboardPage() {
               ) : (
                 <div className="space-y-3 max-h-[480px] overflow-y-auto pr-2">
                   {products.map((product) => (
-                    <Link
+                    <div
                       key={product._id}
-                      href={`/product/${product._id}`}
-                      className="flex items-center justify-between p-4 rounded-xl bg-surface-container-high/40 border border-outline-variant/5 hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-300 group block"
+                      className="flex items-center justify-between p-4 rounded-xl bg-surface-container-high/40 border border-outline-variant/5 hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-300 group"
                     >
-                      <div className="flex items-center gap-4">
+                      <Link href={`/product/${product._id}`} className="flex items-center gap-4 flex-1 min-w-0">
                         <div className="w-12 h-12 rounded-lg bg-surface border border-outline-variant/20 overflow-hidden flex-shrink-0">
                           {product.images?.[0] ? (
                             <img className="w-full h-full object-cover opacity-80" alt={product.name} src={product.images[0]} />
@@ -280,25 +296,40 @@ export default function DashboardPage() {
                             </div>
                           )}
                         </div>
-                        <div>
-                          <div className="text-sm font-bold text-on-surface group-hover:text-primary transition-colors uppercase tracking-wide">{product.name}</div>
+                        <div className="min-w-0">
+                          <div className="text-sm font-bold text-on-surface group-hover:text-primary transition-colors uppercase tracking-wide truncate">{product.name}</div>
                           <div className="text-[10px] text-on-surface-variant font-mono uppercase">{product.category || 'Uncategorized'}</div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-8">
-                        <div className="text-right">
+                      </Link>
+                      <div className="flex items-center gap-4 ml-4 flex-shrink-0">
+                        <div className="text-right hidden sm:block">
                           <div className="text-sm font-mono font-bold text-on-surface">${product.price.toFixed(2)}</div>
                           <div className="text-[10px] text-on-surface-variant">PRICE</div>
                         </div>
-                        <div className="text-right min-w-[60px]">
+                        <div className="text-right min-w-[50px] hidden sm:block">
                           <div className={`text-sm font-mono font-bold ${product.stock < 10 ? 'text-red-400' : product.stock < 30 ? 'text-yellow-400' : 'text-primary'}`}>
                             {product.stock}
                           </div>
                           <div className="text-[10px] text-on-surface-variant">STOCK</div>
                         </div>
-                        <span className="material-symbols-outlined text-outline/30 group-hover:text-primary transition-colors text-sm">chevron_right</span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleEditProduct(product)}
+                            className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center hover:bg-primary/20 hover:border-primary/40 transition-all"
+                            title="Edit product"
+                          >
+                            <span className="material-symbols-outlined text-primary text-sm">edit</span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteProduct(product)}
+                            className="w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center hover:bg-red-500/20 hover:border-red-500/40 transition-all"
+                            title="Delete product"
+                          >
+                            <span className="material-symbols-outlined text-red-400 text-sm">delete</span>
+                          </button>
+                        </div>
                       </div>
-                    </Link>
+                    </div>
                   ))}
                 </div>
               )}
@@ -413,6 +444,7 @@ export default function DashboardPage() {
       <ProductFormModal
         open={showAddProduct}
         onClose={handleProductAdded}
+        editProduct={editProduct}
       />
     </div>
   );

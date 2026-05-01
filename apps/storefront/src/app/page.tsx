@@ -5,6 +5,8 @@ import { TopNav } from '../components/neural/TopNav';
 import { GlassSidebar } from '../components/neural/GlassSidebar';
 import { CentralSearchHub } from '../components/neural/CentralSearchHub';
 import { VisualSearch } from '../components/neural/VisualSearch';
+import { TrendingProducts } from '../components/neural/TrendingProducts';
+import { MonthlySpecial } from '../components/neural/MonthlySpecial';
 import { NewAssets } from '../components/neural/NewAssets';
 import { PopularVendors } from '../components/neural/PopularVendors';
 import { FeaturedProduct } from '../components/neural/FeaturedProduct';
@@ -30,6 +32,13 @@ export default function StorefrontHomePage() {
         <div className="grid grid-cols-12 auto-rows-min gap-4 sm:gap-6 w-full">
           <CentralSearchHub />
           <VisualSearch onResults={handleSearchResults} />
+          
+          {/* Trending Products — Live API Data */}
+          <TrendingProducts />
+
+          {/* This Month Special — Live API Data */}
+          <MonthlySpecial />
+
           <NewAssets />
           <SystemMetrics />
           <PopularVendors />

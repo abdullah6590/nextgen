@@ -1,20 +1,20 @@
 import { Request, Response, NextFunction } from 'express';
-import { AnyZodObject, z } from 'zod';
+import { z, ZodTypeAny } from 'zod';
 
 /**
  * Generic validation middleware using Zod.
  * Validates the req.body against the provided schema.
  */
-export const validate = (schema: AnyZodObject) => {
+export const validate = (schema: ZodTypeAny) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       await schema.parseAsync(req.body);
       next();
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           error: 'Validation failed',
-          issues: error.errors.map(err => ({
+          issues: error.issues.map((err: any) => ({
             path: err.path.join('.'),
             message: err.message
           }))

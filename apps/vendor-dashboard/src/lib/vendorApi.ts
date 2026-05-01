@@ -78,4 +78,10 @@ export const vendorApi = {
         const response = await api.get(`/products/${id}`);
         return response.data;
     },
+
+    // Delete a vendor's product (soft-delete) — DELETE /products/vendor/:id
+    deleteProduct: async (id: string) => {
+        const response = await api.delete(`/products/vendor/${id}`);
+        return response.data;
+    },
 };
