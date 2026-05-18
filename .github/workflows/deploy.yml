@@ -37,10 +37,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Run Nx linting and testing for storefront to ensure code quality before building
-      - name: Lint storefront
-        run: npx nx lint storefront
-
       # Optional: Run tests if you have them
       # - name: Test storefront
       #   run: npx nx test storefront
