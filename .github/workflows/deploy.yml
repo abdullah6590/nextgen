@@ -6,14 +6,14 @@ on:
       - main # Trigger on merges to the main branch
 
 env:
-  PROJECT_ID: your-gcp-project-id # TODO: Update this
-  REGION: us-central1 # TODO: Update if your region is different
-  REPO_NAME: your-artifact-registry-repo-name # TODO: Update this
-  SERVICE_NAME: storefront # Name of your Cloud Run service
+  PROJECT_ID: project-c7935439-18b8-4d29-bb0
+  REGION: us-central1
+  REPO_NAME: storefront-repo
+  SERVICE_NAME: storefront
   
   # This comes from the GCP Workload Identity Federation setup
-  WORKLOAD_IDENTITY_PROVIDER: projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider # TODO: Update this
-  SERVICE_ACCOUNT: github-actions-deployer@your-gcp-project-id.iam.gserviceaccount.com # TODO: Update this
+  WORKLOAD_IDENTITY_PROVIDER: projects/TODO-PROJECT-NUMBER/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
+  SERVICE_ACCOUNT: github-actions-deployer@project-c7935439-18b8-4d29-bb0.iam.gserviceaccount.com
 
 jobs:
   build-and-deploy:
