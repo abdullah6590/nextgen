@@ -1,15 +1,19 @@
-name: Build and Deploy to Cloud Run
+name: Build and Deploy Vendor Dashboard to Cloud Run
 
 on:
   push:
     branches:
       - master # Trigger on merges to the master branch
+    paths:
+      - 'apps/vendor-dashboard/**'
+      - '.github/workflows/deploy-vendor.yml'
+      - 'Dockerfile'
 
 env:
   PROJECT_ID: project-c7935439-18b8-4d29-bb0
   REGION: us-central1
-  REPO_NAME: storefront-repo
-  SERVICE_NAME: storefront
+  REPO_NAME: vendor-dashboard-repo
+  SERVICE_NAME: vendor-dashboard
   
   # This comes from the GCP Workload Identity Federation setup
   WORKLOAD_IDENTITY_PROVIDER: projects/1054090433298/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
@@ -37,10 +41,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Optional: Run tests if you have them
-      # - name: Test storefront
-      #   run: npx nx test storefront
-
       # Authenticate securely to Google Cloud without long-lived keys
       - name: Authenticate to Google Cloud
         id: auth
@@ -59,7 +59,7 @@ jobs:
         run: |
           IMAGE_URL="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}"
           
-          # Pass the APP_NAME build arg to tell Docker to build storefront
+          # Pass the APP_NAME build arg to tell Docker to build vendor-dashboard
           docker build -t $IMAGE_URL --build-arg APP_NAME=${{ env.SERVICE_NAME }} .
             
           docker push $IMAGE_URL
@@ -71,7 +71,7 @@ jobs:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.REGION }}
           image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
-          # Allow unauthenticated traffic since this is a public storefront
+          # Allow unauthenticated traffic since this is a public dashboard
           flags: '--allow-unauthenticated'
           
       - name: Show Output URL
