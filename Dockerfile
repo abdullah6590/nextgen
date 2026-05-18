@@ -38,7 +38,7 @@ RUN adduser --system --uid 1001 nextjs
 # Note: Next.js standalone retains the monorepo structure
 # which means server.js will be inside apps/storefront/
 COPY --from=builder --chown=nextjs:nodejs /app/apps/storefront/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/dist/apps/storefront/.next/static ./apps/storefront/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/storefront/.next/static ./apps/storefront/.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/apps/storefront/public ./apps/storefront/public
 
 # IMPORTANT: Depending on the Nx plugin version, the standalone output might be under /dist/apps/storefront/.next/standalone instead.
