@@ -3,7 +3,7 @@ name: Build and Deploy to Cloud Run
 on:
   push:
     branches:
-      - main # Trigger on merges to the main branch
+      - master # Trigger on merges to the master branch
 
 env:
   PROJECT_ID: project-c7935439-18b8-4d29-bb0
