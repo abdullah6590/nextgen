@@ -13,7 +13,14 @@
 import * as process from 'node:process'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
-globalThis['__dirname'] = path.dirname(fileURLToPath(import.meta.url))
+try {
+  globalThis['__dirname'] = path.dirname(fileURLToPath(import.meta.url))
+} catch {
+  // CJS fallback — import.meta.url is undefined when bundled with webpack CJS
+  if (typeof __filename !== 'undefined') {
+    globalThis['__dirname'] = path.dirname(__filename)
+  }
+}
 
 import * as runtime from "@prisma/client/runtime/client"
 import * as $Enums from "./enums.js"

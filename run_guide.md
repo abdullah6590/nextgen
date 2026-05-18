@@ -1,146 +1,135 @@
 # Nextgen E-Shop — Dev Startup Guide
 
-Open a terminal at `c:\Users\Mujahid\.gemini\antigravity\scratch\eshop`
+Follow these steps to run the complete microservices architecture, frontend applications, and AI models locally.
+
+## Prerequisites
+
+Before starting, ensure you have the following installed:
+- Docker and Docker Compose
+- Node.js and npm (or pnpm/yarn)
+- An active terminal at the project root (`/home/shah/nextgen`)
+
+---
+
+## 🚀 Quick Start (Automated Script)
+
+If you want to start EVERYTHING automatically (Docker, database schemas, database seeding, all microservices, and frontends), simply run the included bash script:
+
+```bash
+./start_all.sh
+```
+
+*(If you prefer to start services individually or want to understand what the script does, follow the manual steps below.)*
+
+---
 
 ## Step 1: Start Infrastructure (Docker)
 
-```powershell
-docker-compose up -d
-```
+Spin up the core infrastructure (PostgreSQL, MongoDB, Redis, Zookeeper, Kafka):
 
 ```bash
-sudo docker-compose up -d
+docker compose up -d
+```
+*(Note: If you encounter permission issues on Linux, you may need to use `sudo docker compose up -d`)*
+
+---
+
+## Step 2: Push Database Schemas & Seed Data (First Time Only)
+
+Sync the Prisma schemas with your running PostgreSQL instance. Since Prisma 7 uses configuration files, run these from within their respective app directories:
+
+```bash
+# Push Auth Service Schema
+cd apps/auth-service && npx prisma db push && cd ../..
+
+# Push Order Service Schema
+cd apps/order-service && npx prisma db push && cd ../..
+
+# Push Recommendation Service Schema (if applicable)
+cd apps/recommendation-service && npx prisma db push && cd ../..
 ```
 
-Starts: PostgreSQL, MongoDB, Redis, Zookeeper, Kafka
-
-## Step 2: Push Prisma Schemas (only if first time or schema changed)
-
-```powershell
-npx prisma db push --schema=apps/auth-service/prisma/schema.prisma
-npx prisma db push --schema=apps/order-service/prisma/schema.prisma
+**Seed the Database:**
+Populate the database with initial vendor accounts and products:
+```bash
+node seed_vendors.js
 ```
+
+---
 
 ## Step 3: Start Backend Services
 
-```powershell
-PowerShell -ExecutionPolicy Bypass -Command "npx nx run-many --target=serve --projects=api-gateway,auth-service,order-service,product-service"
-```
+Use Nx to spin up the API gateway and all microservices concurrently:
 
 ```bash
-    npx nx run-many -t serve
+npx nx run-many -t serve --projects=api-gateway,auth-service,order-service,product-service,recommendation-service
 ```
+*(You can also simply run `npx nx run-many -t serve` to start everything, including the frontends.)*
 
-Runs: API Gateway (:8080), Auth (:3001), Product (:3002), Order (:3003)
+---
 
-## Step 4: Start Frontends (new terminal)
+## Step 4: Start Frontend Applications
 
-```powershell
-PowerShell -ExecutionPolicy Bypass -Command "npx nx run storefront:dev"
-```
+If you didn't start the frontends in the previous step, open a new terminal and run:
 
 ```bash
 # Run the public Storefront
 npx nx dev storefront
-# or
-npx nx run storefront:dev
-
 
 # Run the Vendor Dashboard (in a separate terminal)
 npx nx dev vendor-dashboard
-# or
-npx nx run vendor-dashboard:dev
-
 ```
 
-Runs: Next.js Frontend applications at `http://localhost:3000` and the next available port.
+---
 
-> **Feature Note:** The new _Neural Architect Spatial Product Deep-Dive_ is available on BOTH frontends at `/product/[id]`!
-> (Example: `http://localhost:3000/product/neural-core-v2`)
+## Ports & Services Summary
 
-## Ports Summary
+| Service                 | Port          | Access URL                       |
+| ----------------------- | ------------- | -------------------------------- |
+| **Storefront**          | 3000          | `http://localhost:3000`          |
+| **Vendor Dashboard**    | 3000 / 4200*  | `http://localhost:4200`          |
+| **API Gateway**         | 8080          | `http://localhost:8080`          |
+| **Auth Service**        | 3001          | *(Internal / Proxied via 8080)*  |
+| **Product Service**     | 3002          | *(Internal / Proxied via 8080)*  |
+| **Order Service**       | 3003          | *(Internal / Proxied via 8080)*  |
+| **Visual Search API**   | 3004          | *(Internal / Proxied via 8080)*  |
+| PostgreSQL              | 5432          | `postgresql://admin:password...` |
+| MongoDB                 | 27017         | `mongodb://localhost:27017...`   |
+| Redis                   | 6379          | `localhost:6379`                 |
+| Kafka                   | 9092          | `localhost:9092`                 |
 
-| Service              | Port          |
-| -------------------- | ------------- |
-| Storefront (Next.js) | 3000 / 3001\* |
-| Vendor Dashboard     | 3000 / 4200\* |
-| API Gateway          | 8080          |
-| Auth Service         | 3001\*        |
-| Product Service      | 3002          |
-| Order Service        | 3003          |
-| PostgreSQL           | 5432          |
-| MongoDB              | 27017         |
-| Redis                | 6379          |
-| Kafka                | 9092          |
+> ⚠️ **Note:** If `storefront` and `vendor-dashboard` both try to use port 3000, Nx will auto-assign the next available port (e.g., 4200) for the second app. Similarly, if `auth-service` conflicts with a frontend on 3001, it will auto-assign a new port.
 
-> ⚠️ Auth-service and frontend both default to 3001. Nx usually auto-assigns the next available port for the auth-service.
+---
 
-Since the AI microservice code is fully integrated, here is the exact step-by-step process to run and test it:
+## Vendor Access & Credentials
 
-### 1. Let the Background Installation Finish
+You can log in to the **Vendor Dashboard** using any of these seeded test accounts:
 
-The `npm install` for `@tensorflow/tfjs-node` is still running in the background. It takes an unusually long time (often 2-5 minutes) because it has to compile native C++ bindings for TensorFlow. Once that finishes, you are ready to go.
+- **Email:** `vendor1@example.com` | **Password:** `password123` (TechVault)
+- **Email:** `vendor2@example.com` | **Password:** `password123` (UrbanGear)
+- **Email:** `vendor3@example.com` | **Password:** `password123` (QuantumEdge)
+- **Email:** `vendor4@example.com` | **Password:** `password123` (NeonWave)
+- **Email:** `vendor5@example.com` | **Password:** `password123` (CyberForge)
 
-### 2. Start the Monorepo Services
+---
 
-Use the standard Nx command to spin up all your microservices, the API gateway, and the frontend concurrently:
+## Testing AI & Core Features
 
-```bash
-npx nx run-many -t serve
-```
-
-### 3. Generate Vectors for Existing Inventory (One-time)
-
-Because your MongoDB products don't currently have the `featureVector` array populated, the search won't work out of the box. I built a warm-up endpoint that uses the AI model to generate vectors for your entire current catalog!
-While the servers are running, open a new terminal tab and run:
-
+### 1. Visual Search Engine (Neural Cart)
+To test the visual search, you first need to generate vector embeddings for your existing MongoDB products.
+Once all services are running, execute this command in a new terminal:
 ```bash
 curl -X POST http://localhost:8080/visual-search/generate-vectors
 ```
+*You will receive a JSON response confirming that vectors were generated. You can now go to the Storefront UI (`/neural`) to test dragging and dropping images for similar product recommendations.*
 
-_You will immediately get a JSON response confirming that vectors were generated for all products._
+### 2. Email Verification Workflow
+1. Register a new user in the Storefront.
+2. Check the `auth-service` terminal logs for the fake verification token URL.
+3. Click the link (or paste it into your browser: `/verify-email?token=...`) to verify.
+4. Log in with the newly verified user.
 
-### 4. Test the AI Visual Search!
-
-- Navigate to your storefront UI: `http://localhost:4200/neural`.
-- Drag and drop any image into the **Visual Search** dashboard component.
-- You will see the state change to _"Analyzing Neural Patterns..."_
-- The API will query the MongoDB catalog and instantly populate your `FeaturedProduct` list with the top matches (and their scores will dynamically update based on how mathematically similar they are to the image you uploaded).
-
-After starting the services, run:
-bash
-curl -X POST http://localhost:8080/visual-search/generate-vectors
-This will populate real vectors for all your products, making visual search return meaningful similarity-based results.
-
-Build: visual-search-service ✅
-
-- **To test the threshold:** Upload a picture of something completely unrelated (like a houseplant or a sandwich). The AI will detect the similarity is below 40% (0.40) and will display the stylish _"Neural scan complete: No similar assets found in the network"_ message we just added!
-
-EMAIL VERIFICATION
-Manual Verification
-Register a new user in the Storefront. Wait to see the console log output from auth-service providing the fake email token URL.
-Attempt to log in with that user. Ensure the EMAIL_NOT_VERIFIED error is shown, along with the "Resend Verification" button.
-Click "Resend Verification" and verify the console logs a new token.
-Navigate to the /verify-email?token=... URL.
-Ensure the UI verifies the email and shows a success message.
-Go back to the login page and successfully log in.
-
-Recommendation API Endpoint (P1-11)
-
-utomated Tests
-Run npx nx run api-gateway:build and npx nx run recommendation-service:build.
-Manual Verification
-Start the services.
-Call http://localhost:8080/recommendations via browser or curl.
-Verify it returns the dummy recommendations successfully.
-
-⚠️ Important Note Before Running
-Because Docker is currently offline on your machine (docker API permission denied), I couldn't push the new Prisma schema to your PostgreSQL container automatically.
-
-Before you start testing this, please run:
-
-bash
-docker-compose up -d eshop-postgres
-cd apps/recommendation-service
-npx prisma db push
-(The TypeScript client itself is already generated and compiling cleanly!)
+### 3. Recommendation Service
+Check that the AI recommendation service is working by navigating to:
+`http://localhost:8080/recommendations`

@@ -1,55 +1,92 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
-const PRODUCT_CATALOG: Record<string, { title: string, category: string, imageSrc: string, stock: number, metricText: string, description: string }> = {
-  'neural-core-v2': {
-    title: 'NEURAL_CORE_V2',
-    category: 'Genesis Core Architecture',
-    imageSrc: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCnHt7L0-cjAzxH9tNsDGNj9wRDtAS1lFmZd-5er56LZ4z1gAFRaI56PI2FitFkk3wuwLg75QXFCfqdc2TAZY6kk1oMUO0GtyXf37kSJFViV0FVNMOBp-13DjQ7f2YRW5RPd-5fAjw8V5hDC0cFS9WnCQ-pRD1d23LCxFb-yE4s1w2ygAm9yC2SzijDcX4e6Zkml8T-l8JnMyBIl7PefLRrADu8Li7Otyt3u6tFP67uwZljn2VH3F_wVo7-0BADLXzEL2PFdjfMHbkG',
-    stock: 12,
-    metricText: 'Units available',
-    description: 'Predicted outage in 14 hours. Liquid-cooled quantum lattice processing unit with 4.2 Exaflops of native AI throughput.'
-  },
-  'plasma-drive-8k': {
-    title: 'PLASMA_DRIVE_8K',
-    category: 'High-Fidelity Propulsor Array',
-    imageSrc: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDdYg3MLCZzaEhLC9vGyi-A0jJah_1MXja3CP6WOebzBr6lOMg-uq4z0GoYPP3_YhPFYSENh4uadYTV9oIpwJrW2uAGF_2hNNnVCfKF1dXQPlIJF2y0jMibn8wCqFLJAaiDj_Wp_5yi24LneCWyzVR3XM3vV31B8YHfKEBcr9scJ5dd98OzbfZt0WyobW_1y2-hub2jCEwxuNRMHnA-K0WyKULBJa362JWVmcmYFSE0QhEQxpQWClxEMv6lSL7h8vDYOhj6TGGIDu0l',
-    stock: 88,
-    metricText: 'Units available',
-    description: 'Next restock window: 4 days. Optimal plasma containment rotation.'
-  },
-  'qubit-processor': {
-    title: 'QUBIT PROCESSOR',
-    category: 'Quantum Rotation Module',
-    imageSrc: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAwmReEKjcpM9HPlN8ct6teX9tOLcNNfOUl3M1giCOWilk8CdqN187cIwjHgVCYcSXyUyBEcki5C8hSiw7_sDiQDvNlh9xwti7M-pxN_cKBmi5GMJAQblybnwDsVLwTzqaJrp3lEGzkC0uqcs0qYwzMQNwBGxvckvsIQnTQPPhvc88Ci0v5PCsBBwhrq2Y_whsmMe3Hxi1WmCDWKbCMISfHcPK2Y8ZlGapqEvMiExafkCVf1FbGgrz04gg5RS8znyHmu1CVdgSMS6H8',
-    stock: 64,
-    metricText: 'Units available',
-    description: 'Healthy rotation status detected. Entanglement metrics stable across all sub-nodes.'
-  },
-  'iridescent-mesh-kit': {
-    title: 'IRIDESCENT MESH',
-    category: 'Procedural Materials',
-    imageSrc: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC0kL0OVc4DTI5hZ1_sYW3t4MxQrpudSwaD79qPf8w16b0gibEsdps4OaLyZEFW2eG5PjkjOjjAU8hKCvhFPo9lC77gQzEg0jOeKEFUuR3oUe7NASDiKZgRhcVU5q1TH2tgcbVU1kf_CayrCWEwEWxaXLOVpchGKMGhnC5kiiubSfvqi6GpMlHymLu9ufHq1FJVW5ewSBGsqoANc7DTaaLEx_eoyQCqDc1Kan0i87b9bc0lNfn6mrgBymgvaQzcRw62UqS_PgEjr5Zm',
-    stock: 99,
-    metricText: '% Match Accuracy',
-    description: 'High-fidelity procedural material kit. Contains natively generated neural textures with absolute hyper-realistic irradiance.'
-  },
-  'neo-tokyo-enviro': {
-    title: 'NEO-TOKYO ENVIRO',
-    category: 'Real-time Scene Core',
-    imageSrc: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAnUssltF04v92j3XMPmRKSqs8u_bDolyYBBWuEXCfTkbIjHbSZKO8Gn7b3Of6GJVFTyo6sdIHOW_Y9FFLg5AENvJP3LHFSQ-iYF4l_JHDG9ERYmQEauipMqEjTBiIaklARI1lTRkwmfBp-FgJ6X6ai4QTQ2Xv09hApC6T9tujWSfvLtXPBc-ewuLdib9n8zI8FcTRzs_mxQ3IItWzbP2HvQALEbqwO095-ii94G-b1ExTlKQeyCuyRiQyMmIqUOjydrjpLqpW1nZLM',
-    stock: 98,
-    metricText: '% Match Accuracy',
-    description: 'Fully integrated Neo-Tokyo architectural environment utilizing decentralized blockchain verification rendering sequences.'
-  }
-};
+interface Product {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  category: string;
+  vendorId: string;
+  images: string[];
+  tags: string[];
+  createdAt: string;
+}
 
-export default async function ProductDeepDive({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = await params;
-  const productKey = resolvedParams.id ? resolvedParams.id.toLowerCase() : 'neural-core-v2';
-  const product = PRODUCT_CATALOG[productKey] || {
-    ...PRODUCT_CATALOG['neural-core-v2'],
-    title: resolvedParams.id.toUpperCase().replace('-', ' ')
-  };
+const API_URL = 'http://localhost:8080';
+
+export default function ProductDeepDive() {
+  const params = useParams();
+  const productId = params?.id as string;
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!productId) return;
+
+    const fetchProduct = async () => {
+      const dummyProducts = [
+        { _id: "demo-1", name: "Quantum Neural Processor v9", price: 1499.99, category: "Components", stock: 15, vendorId: "v1", tags: ["Neural", "Quantum", "CPU"], images: ["https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&auto=format&fit=crop&q=80"], description: "Next-gen quantum neural processor for extreme computational workloads.", createdAt: new Date().toISOString() },
+        { _id: "demo-2", name: "Cybernetic Visual Augmentation", price: 849.50, category: "Wearables", stock: 5, vendorId: "v1", tags: ["Cybernetic", "Vision"], images: ["https://images.unsplash.com/photo-1535223289827-42f1e9919769?w=500&auto=format&fit=crop&q=80"], description: "Advanced optical implants with HUD integration.", createdAt: new Date().toISOString() },
+        { _id: "demo-3", name: "Neon-Lit Mechanical Array", price: 229.99, category: "Peripherals", stock: 42, vendorId: "v1", tags: ["Keyboard", "RGB"], images: ["https://images.unsplash.com/photo-1595225476474-87563907a212?w=500&auto=format&fit=crop&q=80"], description: "Tactile mechanical keyboard with programmable neon matrix.", createdAt: new Date().toISOString() },
+        { _id: "demo-4", name: "Holographic Matrix Projector", price: 2999.00, category: "Displays", stock: 2, vendorId: "v1", tags: ["Hologram", "Display"], images: ["https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=500&auto=format&fit=crop&q=80"], description: "Projects high-fidelity volumetric 3D holograms.", createdAt: new Date().toISOString() },
+        { _id: "demo-5", name: "Cybernetic Exo-Gauntlet", price: 4999.00, category: "Augmentation", stock: 3, vendorId: "v1", tags: ["Exo", "Military"], images: ["https://images.unsplash.com/photo-1614729939124-032f0b56c9ce?w=500&auto=format&fit=crop&q=80"], description: "Military-grade exoskeleton gauntlet with pneumatic kinetic amplifiers and carbon-nanotube plating.", createdAt: new Date().toISOString() },
+        { _id: "demo-6", name: "Neuro-Link Interface Helmet", price: 1250.00, category: "Wearables", stock: 12, vendorId: "v1", tags: ["BCI", "Neural"], images: ["https://images.unsplash.com/photo-1557683316-973673baf926?w=500&auto=format&fit=crop&q=80"], description: "Direct brain-computer interface helmet for immersive VR diving.", createdAt: new Date().toISOString() },
+        { _id: "demo-7", name: "Pulse-Plasma Hoverboard", price: 899.99, category: "Transport", stock: 8, vendorId: "v1", tags: ["Hover", "Mobility"], images: ["https://images.unsplash.com/photo-1555661530-68c8e98db4e6?w=500&auto=format&fit=crop&q=80"], description: "Anti-gravity mobility device with dual pulse-plasma thrusters.", createdAt: new Date().toISOString() },
+        { _id: "demo-8", name: "Zero-G Sleep Pod", price: 5500.00, category: "Furniture", stock: 1, vendorId: "v1", tags: ["Pod", "Rest"], images: ["https://images.unsplash.com/photo-1523821741446-edb2b68bb7a0?w=500&auto=format&fit=crop&q=80"], description: "Suspension sleep pod utilizing magnetic levitation for ultimate rest.", createdAt: new Date().toISOString() }
+      ];
+
+      try {
+        const res = await fetch(`${API_URL}/products/${productId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setProduct(data);
+        } else {
+          // If product not found on backend (maybe it's a dummy ID), try our fallback array
+          const fallback = dummyProducts.find(p => p._id === productId) || dummyProducts[0];
+          setProduct(fallback);
+        }
+      } catch (e) {
+        console.warn('Backend offline, using fallback dummy product data');
+        const fallback = dummyProducts.find(p => p._id === productId) || dummyProducts[0];
+        setProduct(fallback);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [productId]);
+
+  if (loading) {
+    return (
+      <div className="bg-[#131315] text-[#e5e1e4] font-body min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 border-2 border-[#4cd7f6]/30 border-t-[#4cd7f6] rounded-full animate-spin"></div>
+          <p className="text-[10px] text-[#bcc9cd] uppercase tracking-widest font-bold">Loading Neural Asset...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="bg-[#131315] text-[#e5e1e4] font-body min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <span className="material-symbols-outlined text-5xl text-[#4cd7f6]/30 mb-4 block">error_outline</span>
+          <h2 className="text-xl font-headline font-bold uppercase mb-2">{error || 'Product Not Found'}</h2>
+          <Link href="/" className="text-[#4cd7f6] text-xs uppercase tracking-widest font-bold hover:underline">Return to Storefront</Link>
+        </div>
+      </div>
+    );
+  }
+
+  const imageSrc = product.images?.[0] || '';
+  const title = product.name.toUpperCase().replace(/\s+/g, '_');
 
   return (
     <div className="bg-[#131315] text-[#e5e1e4] font-body selection:bg-[#d0bcff]/30 min-h-screen">
@@ -69,20 +106,17 @@ export default async function ProductDeepDive({ params }: { params: Promise<{ id
         <div className="flex justify-between items-center w-full px-8 py-4 max-w-[1920px] mx-auto">
           <Link href="/" className="text-2xl font-black tracking-tighter text-[#4cd7f6] font-headline uppercase">NEURAL_ARC</Link>
           <div className="hidden md:flex items-center gap-12">
-            <Link className="text-[#4cd7f6] border-b-2 border-[#4cd7f6] pb-1 font-headline tracking-tight uppercase" href="/">Storefront</Link>
-            <Link className="text-slate-400 hover:text-[#4cd7f6] transition-colors font-headline tracking-tight uppercase" href="#">Visual Search</Link>
-            <Link className="text-slate-400 hover:text-[#4cd7f6] transition-colors font-headline tracking-tight uppercase" href="/">Vendors</Link>
-            <Link className="text-slate-400 hover:text-[#4cd7f6] transition-colors font-headline tracking-tight uppercase" href="#">Analytics</Link>
+            <Link className="text-slate-400 hover:text-[#4cd7f6] transition-colors font-headline tracking-tight uppercase" href="/">Storefront</Link>
+            <Link className="text-slate-400 hover:text-[#4cd7f6] transition-colors font-headline tracking-tight uppercase" href="/products">Catalog</Link>
           </div>
           <div className="flex items-center gap-6">
             <button className="text-slate-400 hover:text-[#4cd7f6] transition-all duration-300 scale-95 active:scale-90">
               <span className="material-symbols-outlined">shopping_cart</span>
             </button>
-            <button className="text-slate-400 hover:text-[#4cd7f6] transition-all duration-300 scale-95 active:scale-90">
-              <span className="material-symbols-outlined">smart_toy</span>
-            </button>
             <Link href="/profile" className="w-10 h-10 rounded-full border border-[#4cd7f6]/20 overflow-hidden bg-[#2a2a2c] hover:border-[#4cd7f6]/50 hover:scale-105 transition-all cursor-pointer block">
-              <img alt="User Neural Profile" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBy1PiqlAxEKDb59OF_RW385I9g3Ebmj7gFIoZJIfaeh7y735x5UTQmPwpEUK5aLODyDzLNAHL--M4Z37T2T7QCTrrigc_eKvICV_ArCt63fwTjCTwgJ4gANtZhN5nCaB3Z7lUGyDu3uRDXJtCkPxK2S5ceVZBj0vRiZtNMC_E7kCFdeQ1PIbAgugdQI1Ww5woCM0RfTTIUqUa9YMYTN1qP9LaU6GWkvYSq-QPtvwmLHxnJpBcEpvwSS39vdU6m0ssr1qxP_29Xexdl"/>
+              <div className="w-full h-full flex items-center justify-center">
+                <span className="material-symbols-outlined text-[#4cd7f6]/50 text-sm">person</span>
+              </div>
             </Link>
           </div>
         </div>
@@ -90,17 +124,23 @@ export default async function ProductDeepDive({ params }: { params: Promise<{ id
 
       {/* Main Content Canvas */}
       <main className="pt-24 pb-12 px-8 min-h-screen grid grid-cols-12 gap-8 max-w-[1920px] mx-auto relative overflow-hidden">
-        {/* Left Section: 3D Asset Preview */}
+        {/* Left Section: Product Image */}
         <section className="col-span-12 lg:col-span-6 flex flex-col gap-6">
           <div className="relative w-full aspect-square lg:aspect-auto lg:h-[819px] bg-[#0e0e10] rounded-[24px] overflow-hidden border border-[#3d494c]/10 group">
-            <img alt={product.title} className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-[2000ms]" src={product.imageSrc}/>
+            {imageSrc ? (
+              <img alt={product.name} className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-[2000ms]" src={imageSrc}/>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-[#0e0e10]">
+                <span className="material-symbols-outlined text-8xl text-[#3d494c]/30">image</span>
+              </div>
+            )}
             <div className="absolute bottom-8 left-8 flex flex-col gap-2">
               <div className="inline-flex items-center gap-2 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/5">
                 <span className="w-2 h-2 rounded-full bg-[#4cd7f6] animate-pulse"></span>
-                <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#4cd7f6]">Live Neural Render</span>
+                <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#4cd7f6]">Live Product</span>
               </div>
-              <h1 className="text-6xl font-black font-headline tracking-tighter text-white uppercase leading-none">{product.title}</h1>
-              <p className="text-[#bcc9cd] font-medium tracking-wide">Series v.4 // {product.category}</p>
+              <h1 className="text-4xl lg:text-6xl font-black font-headline tracking-tighter text-white uppercase leading-none">{title}</h1>
+              <p className="text-[#bcc9cd] font-medium tracking-wide">{product.category || 'Uncategorized'}</p>
             </div>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="w-64 h-64 border border-[#4cd7f6]/20 rounded-full animate-[spin_20s_linear_infinite]"></div>
@@ -114,6 +154,13 @@ export default async function ProductDeepDive({ params }: { params: Promise<{ id
           <div className="glass-panel p-6 rounded-[24px] border border-[#3d494c]/20 neon-glow-violet">
             <div className="flex justify-between items-start mb-6">
               <div>
+                <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Price</p>
+                <h3 className="text-3xl font-headline font-bold text-[#4cd7f6]">${product.price.toFixed(2)}</h3>
+              </div>
+              <span className="material-symbols-outlined text-[#d0bcff]">payments</span>
+            </div>
+            <div className="flex justify-between items-start mb-4">
+              <div>
                 <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Stock Status</p>
                 <h3 className="text-xl font-headline font-bold text-white uppercase">Real-Time Sync</h3>
               </div>
@@ -121,33 +168,41 @@ export default async function ProductDeepDive({ params }: { params: Promise<{ id
             </div>
             <div className="flex items-end gap-2 mb-4">
               <span className="text-4xl font-headline font-bold text-[#4cd7f6]">{product.stock}</span>
-              <span className="text-[#bcc9cd] text-sm pb-1">{product.metricText}</span>
+              <span className="text-[#bcc9cd] text-sm pb-1">Units available</span>
             </div>
             <div className="w-full h-1.5 bg-[#353437] rounded-full overflow-hidden">
               <div className="h-full bg-gradient-to-r from-[#4cd7f6] to-[#d0bcff] rounded-full shadow-[0_0_10px_#4cd7f6]" style={{ width: `${Math.min(product.stock, 100)}%` }}></div>
             </div>
-            <p className="mt-3 text-[10px] text-[#bcc9cd] italic">Kafka cluster: us-east-1a-prod // Latency: 4ms</p>
+            <p className="mt-3 text-[10px] text-[#bcc9cd] italic">Product ID: {product._id}</p>
           </div>
 
           <div className="flex flex-col gap-4">
             <div className="bg-[#1c1b1d] p-6 rounded-[24px] border border-[#3d494c]/10 hover:border-[#4cd7f6]/40 transition-all cursor-default group hover:-translate-y-1 hover:scale-[1.01]">
               <div className="flex items-center gap-4 mb-3">
                 <div className="p-2 rounded-md bg-[#4cd7f6]/10 text-[#4cd7f6]">
-                  <span className="material-symbols-outlined">memory</span>
+                  <span className="material-symbols-outlined">description</span>
                 </div>
-                <span className="font-headline font-bold tracking-tight text-lg uppercase">Core Processing</span>
+                <span className="font-headline font-bold tracking-tight text-lg uppercase">Description</span>
               </div>
-              <p className="text-sm text-[#bcc9cd] leading-relaxed">{product.description}</p>
+              <p className="text-sm text-[#bcc9cd] leading-relaxed">{product.description || 'No description available for this product.'}</p>
             </div>
-            <div className="bg-[#1c1b1d] p-6 rounded-[24px] border border-[#3d494c]/10 hover:border-[#d0bcff]/40 transition-all cursor-default group hover:-translate-y-1 hover:scale-[1.01]">
-              <div className="flex items-center gap-4 mb-3">
-                <div className="p-2 rounded-md bg-[#d0bcff]/10 text-[#d0bcff]">
-                  <span className="material-symbols-outlined">shield_moon</span>
+            {product.tags && product.tags.length > 0 && (
+              <div className="bg-[#1c1b1d] p-6 rounded-[24px] border border-[#3d494c]/10 hover:border-[#d0bcff]/40 transition-all cursor-default group hover:-translate-y-1 hover:scale-[1.01]">
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="p-2 rounded-md bg-[#d0bcff]/10 text-[#d0bcff]">
+                    <span className="material-symbols-outlined">label</span>
+                  </div>
+                  <span className="font-headline font-bold tracking-tight text-lg uppercase">Tags</span>
                 </div>
-                <span className="font-headline font-bold tracking-tight text-lg uppercase">Neural Shield</span>
+                <div className="flex flex-wrap gap-2">
+                  {product.tags.map(tag => (
+                    <span key={tag} className="px-3 py-1 rounded-full bg-[#353437] text-[#bcc9cd] text-xs uppercase tracking-widest border border-[#3d494c]/20">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
-              <p className="text-sm text-[#bcc9cd] leading-relaxed">Integrated biometric encryption using decentralized blockchain verification layers.</p>
-            </div>
+            )}
           </div>
 
           <div className="mt-auto flex flex-col gap-4">
@@ -156,9 +211,6 @@ export default async function ProductDeepDive({ params }: { params: Promise<{ id
             </button>
             <button className="w-full py-5 rounded-full bg-[#d0bcff] text-[#3c0091] font-headline font-black uppercase tracking-[0.2em] scale-100 hover:scale-[1.05] active:scale-95 transition-all duration-300 glow-pulse-violet flex items-center justify-center gap-3">
               <span className="material-symbols-outlined">payments</span> PURCHASE NOW
-            </button>
-            <button className="w-full py-3 mt-2 rounded-full glass-panel border border-[#4cd7f6]/20 text-[#4cd7f6]/60 font-headline font-bold uppercase tracking-[0.1em] hover:text-[#4cd7f6] hover:border-[#4cd7f6]/50 transition-all flex items-center justify-center gap-2 text-xs">
-              <span className="material-symbols-outlined text-sm">analytics</span> AI Analysis Report
             </button>
           </div>
         </section>
@@ -181,25 +233,25 @@ export default async function ProductDeepDive({ params }: { params: Promise<{ id
           <div className="flex-1 p-6 overflow-y-auto space-y-6">
             <div className="flex flex-col gap-2 max-w-[85%]">
               <div className="bg-[#571bc1]/20 p-4 rounded-xl rounded-tl-none border border-[#d0bcff]/20">
-                <p className="text-sm text-white leading-relaxed">Greetings, Architect. The {product.title} perfectly complements your existing workflow. Shall I simulate the integration?</p>
+                <p className="text-sm text-white leading-relaxed">Greetings, Architect. The <span className="text-[#4cd7f6] font-bold">{product.name}</span> is a popular choice in the <span className="text-[#d0bcff] font-bold">{product.category}</span> category. Currently {product.stock} units in stock.</p>
               </div>
-              <span className="text-[10px] text-slate-600 uppercase">09:41 AM</span>
+              <span className="text-[10px] text-slate-600 uppercase">AI Analysis</span>
             </div>
             <div className="flex flex-col gap-2 max-w-[85%] ml-auto items-end">
               <div className="bg-[#353437] p-4 rounded-xl rounded-tr-none border border-[#3d494c]/20">
-                <p className="text-sm text-white leading-relaxed">What's the latency impact on visual search tasks?</p>
+                <p className="text-sm text-white leading-relaxed">What can you tell me about this product?</p>
               </div>
-              <span className="text-[10px] text-slate-600 uppercase">09:42 AM</span>
+              <span className="text-[10px] text-slate-600 uppercase">User Query</span>
             </div>
             <div className="flex flex-col gap-2 max-w-[85%]">
               <div className="bg-[#571bc1]/20 p-4 rounded-xl rounded-tl-none border border-[#d0bcff]/20">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="material-symbols-outlined text-sm">bolt</span>
-                  <span className="text-[10px] uppercase font-bold text-[#d0bcff]">AI Calculation Complete</span>
+                  <span className="text-[10px] uppercase font-bold text-[#d0bcff]">AI Assessment</span>
                 </div>
-                <p className="text-sm text-white leading-relaxed">Predicted latency reduction is <span className="text-[#4cd7f6] font-bold">22.4%</span> due to the dedicated vector sub-processor.</p>
+                <p className="text-sm text-white leading-relaxed">{product.description || 'This product is available for purchase. Add it to your cart to proceed with checkout.'}</p>
               </div>
-              <span className="text-[10px] text-slate-600 uppercase">09:42 AM</span>
+              <span className="text-[10px] text-slate-600 uppercase">AI Response</span>
             </div>
           </div>
           

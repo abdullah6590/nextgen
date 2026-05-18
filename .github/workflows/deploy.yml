@@ -1,0 +1,83 @@
+name: Build and Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main # Trigger on merges to the main branch
+
+env:
+  PROJECT_ID: your-gcp-project-id # TODO: Update this
+  REGION: us-central1 # TODO: Update if your region is different
+  REPO_NAME: your-artifact-registry-repo-name # TODO: Update this
+  SERVICE_NAME: storefront # Name of your Cloud Run service
+  
+  # This comes from the GCP Workload Identity Federation setup
+  WORKLOAD_IDENTITY_PROVIDER: projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider # TODO: Update this
+  SERVICE_ACCOUNT: github-actions-deployer@your-gcp-project-id.iam.gserviceaccount.com # TODO: Update this
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    # Required permissions for Workload Identity Federation to securely mint tokens
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Run Nx linting and testing for storefront to ensure code quality before building
+      - name: Lint storefront
+        run: npx nx lint storefront
+
+      # Optional: Run tests if you have them
+      # - name: Test storefront
+      #   run: npx nx test storefront
+
+      # Authenticate securely to Google Cloud without long-lived keys
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker to use Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      - name: Build and Push Docker Image
+        run: |
+          IMAGE_URL="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}"
+          
+          # Optional: Pass GitHub secrets as build-args for NEXT_PUBLIC_ variables
+          # docker build -t $IMAGE_URL --build-arg NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }} .
+          docker build -t $IMAGE_URL .
+            
+          docker push $IMAGE_URL
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.REGION }}
+          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          # Allow unauthenticated traffic since this is a public storefront
+          flags: '--allow-unauthenticated'
+          
+      - name: Show Output URL
+        run: echo "Successfully deployed to ${{ steps.deploy.outputs.url }}"

@@ -19,15 +19,59 @@ export const MonthlySpecial = () => {
 
   useEffect(() => {
     const fetchProducts = async () => {
+      const fallbackProducts: Product[] = [
+        {
+          _id: "demo-5",
+          name: "Cybernetic Exo-Gauntlet",
+          price: 4999.00,
+          category: "Augmentation",
+          description: "Military-grade exoskeleton gauntlet with pneumatic kinetic amplifiers and carbon-nanotube plating.",
+          stock: 3,
+          images: ["https://images.unsplash.com/photo-1614729939124-032f0b56c9ce?w=500&auto=format&fit=crop&q=80"],
+        },
+        {
+          _id: "demo-6",
+          name: "Neuro-Link Interface Helmet",
+          price: 1250.00,
+          category: "Wearables",
+          stock: 12,
+          images: ["https://images.unsplash.com/photo-1557683316-973673baf926?w=500&auto=format&fit=crop&q=80"],
+        },
+        {
+          _id: "demo-7",
+          name: "Pulse-Plasma Hoverboard",
+          price: 899.99,
+          category: "Transport",
+          stock: 8,
+          images: ["https://images.unsplash.com/photo-1555661530-68c8e98db4e6?w=500&auto=format&fit=crop&q=80"],
+        },
+        {
+          _id: "demo-8",
+          name: "Zero-G Sleep Pod",
+          price: 5500.00,
+          category: "Furniture",
+          stock: 1,
+          images: ["https://images.unsplash.com/photo-1523821741446-edb2b68bb7a0?w=500&auto=format&fit=crop&q=80"],
+        }
+      ];
+
       try {
         // Fetch page 2 so we get different products from TrendingProducts
         const res = await fetch('http://localhost:8080/products?limit=4&page=2');
         if (res.ok) {
           const data = await res.json();
-          setProducts(data.products || []);
+          if (data.products && data.products.length > 0) {
+            // Combine real data with dummy data so the 4 slots are ALWAYS full
+            setProducts([...data.products, ...fallbackProducts]);
+          } else {
+            setProducts(fallbackProducts);
+          }
+        } else {
+          setProducts(fallbackProducts);
         }
       } catch (e) {
-        console.error('Failed to fetch monthly specials:', e);
+        console.warn('Backend offline, using stunning dummy products for Monthly Special!');
+        setProducts(fallbackProducts);
       } finally {
         setLoading(false);
       }
