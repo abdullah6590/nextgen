@@ -12,7 +12,7 @@ env:
   SERVICE_NAME: storefront
   
   # This comes from the GCP Workload Identity Federation setup
-  WORKLOAD_IDENTITY_PROVIDER: projects/TODO-PROJECT-NUMBER/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
+  WORKLOAD_IDENTITY_PROVIDER: projects/1054090433298/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
   SERVICE_ACCOUNT: github-actions-deployer@project-c7935439-18b8-4d29-bb0.iam.gserviceaccount.com
 
 jobs:
